@@ -2,6 +2,10 @@
 
 Kho tài liệu này được tổng hợp và xây dựng nhằm phục vụ toàn bộ lộ trình thực tập Cloud/AWS, bám sát khung chương trình **The First Cloud Journey (FCJ)** của cộng đồng AWS Study Group Vietnam, kết hợp đặc tả kỹ thuật dự án **Agentic RAG on AWS**.
 
+- **Website Báo cáo thực tập (Live trên GitHub Pages)**: [https://lamhuy0489.github.io/workshop/](https://lamhuy0489.github.io/workshop/)
+- **Kho lưu trữ Website Báo cáo**: [https://github.com/Lamhuy0489/workshop](https://github.com/Lamhuy0489/workshop)
+- **Đề xuất dự án trực tuyến (Proposal)**: [https://lamhuy0489.github.io/workshop/2-proposal/](https://lamhuy0489.github.io/workshop/2-proposal/)
+
 ---
 
 ## 1. Mục lục tài liệu tri thức

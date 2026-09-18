@@ -76,3 +76,7 @@ yarn-error.log*
 *.swo
 .obsidian/
 
+
+# Nested Workshop Hugo Website
+workshop/
+
