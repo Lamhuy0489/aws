@@ -14,6 +14,12 @@
   - Tiep nhan huong dan Workshop Template vao raw/templates/fcaj-workshop-template-guide.md.
   - Tiep nhan phan tich bai nop mau cua hoc vien vao raw/reports/sample-student-workshop-proposal.md.
   - Tao 2 nguon moi trong wiki/sources/ (fcj-2026-internship-rules, fcj-2026-workshop-template).
-  - Trich xuat 2 khai niem moi trong wiki/concepts/ (fcaj-internship-evaluation, fcaj-workshop-structure).
+  - Trich xuat 2 khai niem moi trong wiki/concepts/ (fcj-internship-evaluation, fcj-workshop-structure).
   - Xay dung bai tong hop chuyen sau wiki/syntheses/fcaj-internship-submission-guide.md.
   - Cap nhat dong bo toan bo lien ket vao wiki/index.md.
+- Chay chu ky Ingest dot 3:
+  - Xac minh ket noi AWS CLI v2 thanh cong voi IAM User dev_admin (Account ID: 677994024390).
+  - Ghi nhan ket qua thuc hanh Lab 000001 & 000002 (MFA, IAM User/Group) vao raw/labs/lab-000001-setup-account-and-mfa.md.
+  - Ghi nhan ket qua thuc hanh Lab 000007 (AWS Budgets 100$ & 200$) vao raw/labs/lab-000007-aws-budgets.md.
+  - Ghi nhan ket qua thuc hanh Lab 000011 (AWS CLI) vao raw/labs/lab-000011-aws-cli.md.
+  - Cap nhat Worklog tuan 1 tren website Hugo GitHub Pages tai lamhuy0489.github.io/workshop.
