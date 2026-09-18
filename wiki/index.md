@@ -15,15 +15,20 @@ He thong tri thuc du an AWS va Agentic RAG duoc duy tri theo mo hinh Bo nao ngoa
 - [[aws-lambda-controller]]: Trung tam dieu phoi ReAct Agent tren Serverless.
 - [[aws-bedrock-and-llm]]: Nguon mo hinh nen tang va cong nghe GenAI tren AWS.
 - [[fcj-training-framework]]: Khung dao tao Cloud toan dien 12 tuan.
+- [[fcaj-internship-evaluation]]: Thang diem danh gia 10 diem va tieu chi nhan moc thuc tap.
+- [[fcaj-workshop-structure]]: Cau truc 7 phan bat buoc cua website bao cao thuc tap.
 
 ## 4. Danh muc nguon tai lieu (Sources)
 - [[fcj-2026-curriculum]]
 - [[fcj-2026-roadmap]]
 - [[fcj-2026-checklist]]
 - [[rag-2026-spec]]
+- [[fcaj-2026-internship-rules]]
+- [[fcaj-2026-workshop-template]]
 
 ## 5. Bai tong hop chuyen sau (Syntheses)
-- (Chua co bai tong hop moi - se duoc cap nhat qua chu ky Compile)
+- [[fcaj-internship-submission-guide]]: Huong dan xay dung va nop bao cao thuc tap FCAJ bang website Hugo tren GitHub Pages.
 
 ## 6. Luan chuyen cau tra loi (Outputs)
 - (Chua co truy van moi - se duoc cap nhat qua chu ky Query)
+
