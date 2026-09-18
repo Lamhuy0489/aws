@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "category": "direct_question",
+    "query": "AWS Lambda là gì và hỗ trợ những ngôn ngữ lập trình nào?",
+    "expected_behavior": "Tra cứu trực tiếp qua kiến thức nền của LLM hoặc tài liệu tổng quan"
+  },
+  {
+    "id": 2,
+    "category": "rag_retrieval",
+    "query": "Quy trình xin nghỉ phép và bàn giao tài sản tại công ty được quy định thế nào?",
+    "expected_behavior": "Gọi Tool tra cứu tài liệu nội bộ trong S3 Knowledge Base"
+  },
+  {
+    "id": 3,
+    "category": "tool_execution",
+    "query": "Kiểm tra giúp tôi mã vé hỗ trợ TICKET-8849 hiện tại đang ở trạng thái nào?",
+    "expected_behavior": "Kích hoạt Tool CheckTicketStatus để truy vấn bảng DynamoDB"
+  },
+  {
+    "id": 4,
+    "category": "multi_step_reasoning",
+    "query": "Hệ thống máy chủ EC2 i-0192837465 có đang chạy không, nếu có hãy tóm tắt quy trình bảo trì máy chủ theo tài liệu nội bộ?",
+    "expected_behavior": "Thực hiện bước 1 gọi Tool kiểm tra EC2, sau đó thực hiện bước 2 tra cứu quy trình từ S3"
+  }
+]
