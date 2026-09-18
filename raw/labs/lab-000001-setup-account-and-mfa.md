@@ -1,8 +1,9 @@
 # Ket Qua Thuc Hanh: Lab 000001 & Lab 000002 - Khoi Tao Tai Khoan AWS va Bao Mat IAM
 
-- Nguoi thuc hien: Lam Huy
+- Nguoi thuc hien: Lam Quang Huy
 - Ngay hoan thanh: 2026-09-18
 - AWS Account ID: 677994024390
+- AWS Account Name: huylam
 - Default Region: ap-southeast-1 (Singapore)
 
 ---
@@ -29,3 +30,7 @@
 
 ## 4. Ket luan & Danh gia an toan
 Tai khoan da dap ung day du tieu chuan an toan co ban theo CIS AWS Foundations Benchmark (Root account co MFA, cong viec hang ngay thuc hien qua IAM User).
+
+## 5. Hinh anh minh chung thuc te
+- Minh chung tai khoan ca nhan: `../images/week1/01-account-huylam.png`
+- Minh chung kich hoat Root MFA: `../images/week1/02-mfa-root.png`

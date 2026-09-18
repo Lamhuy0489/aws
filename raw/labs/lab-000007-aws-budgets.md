@@ -1,8 +1,9 @@
 # Ket Qua Thuc Hanh: Lab 000007 - Quan Ly Chi Phi Voi AWS Budgets
 
-- Nguoi thuc hien: Lam Huy
+- Nguoi thuc hien: Lam Quang Huy
 - Ngay hoan thanh: 2026-09-18
 - AWS Account ID: 677994024390
+- AWS Account Name: huylam
 
 ---
 
@@ -28,3 +29,6 @@ He thong da xac nhan 2 Budget dang hoat dong o trang thai `HEALTHY`:
 
 ## 3. Khuyen nghi FinOps bo sung
 - Han muc 100 USD va 200 USD la nguong an toan cao. De can than hon khi thuc tap, nen bo sung them mot canh bao o nguong nho: **5.0 USD** hoac **10.0 USD** de nhan email canh bao ngay khi co bat ky tai nguyen nao bat dau tinh phi.
+
+## 4. Hinh anh minh chung thuc te
+- Minh chung AWS Budgets Healthy: `../images/week1/03-aws-budgets.png`

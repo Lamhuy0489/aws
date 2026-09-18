@@ -1,7 +1,9 @@
 # Ket Qua Thuc Hanh: Lab 000011 - Cai Dat Va Cau Hinh AWS CLI
 
-- Nguoi thuc hien: Lam Huy
+- Nguoi thuc hien: Lam Quang Huy
 - Ngay hoan thanh: 2026-09-18
+- AWS Account ID: 677994024390
+- AWS Account Name: huylam
 - Duong dan binary: /usr/local/bin/aws
 
 ---
@@ -27,3 +29,7 @@ aws sts get-caller-identity
 #     "Arn": "arn:aws:iam::677994024390:user/dev_admin"
 # }
 ```
+
+## 4. Hinh anh minh chung thuc te
+- Minh chung xac thuc AWS CLI: `../images/week1/04-aws-cli-verified.png`
+
