@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWS S3 Static Web Portal - Lam Quang Huy</title>
+    <style>
+        :root {
+            --aws-navy: #0f172a;
+            --aws-dark: #1e293b;
+            --aws-amber: #ff9900;
+            --aws-amber-hover: #ec8c00;
+            --aws-blue: #0073bb;
+            --aws-green: #059669;
+            --aws-green-bg: #ecfdf5;
+            --border-color: #e2e8f0;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --bg-page: #f8fafc;
+            --card-bg: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 32px 16px;
+        }
+
+        .wrapper {
+            max-width: 960px;
+            margin: 0 auto;
+        }
+
+        /* Top Header */
+        header {
+            background: linear-gradient(135deg, var(--aws-navy) 0%, var(--aws-dark) 100%);
+            border-top: 5px solid var(--aws-amber);
+            border-radius: 12px;
+            padding: 36px 32px;
+            color: #ffffff;
+            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.15);
+            margin-bottom: 24px;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .badge-program {
+            background-color: rgba(255, 153, 0, 0.15);
+            border: 1px solid var(--aws-amber);
+            color: #ffb74d;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background-color: rgba(16, 185, 129, 0.15);
+            border: 1px solid var(--aws-green);
+            color: #34d399;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 9999px;
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #10b981;
+            border-radius: 50%;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.35);
+        }
+
+        header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 8px;
+            color: #ffffff;
+        }
+
+        header p.lead {
+            color: #94a3b8;
+            font-size: 16px;
+        }
+
+        /* Metrics Row */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .metric-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .metric-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .metric-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--aws-navy);
+            word-break: break-all;
+        }
+
+        .metric-sub {
+            font-size: 13px;
+            color: var(--aws-green);
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        /* Main Content Layout */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 28px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 16px;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--aws-navy);
+        }
+
+        .card-tag {
+            font-size: 12px;
+            font-weight: 600;
+            background: #f1f5f9;
+            color: #475569;
+            padding: 4px 10px;
+            border-radius: 6px;
+        }
+
+        /* Profile Details Table */
+        .profile-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .profile-table tr {
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .profile-table tr:last-child {
+            border-bottom: none;
+        }
+
+        .profile-table th {
+            text-align: left;
+            padding: 12px 8px;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 14px;
+            width: 35%;
+        }
+
+        .profile-table td {
+            padding: 12px 8px;
+            color: var(--text-main);
+            font-size: 14px;
+        }
+
+        .code-inline {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            background-color: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #0f172a;
+        }
+
+        /* Workflow Step Cards */
+        .steps-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-top: 8px;
+        }
+
+        .step-item {
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+            padding: 16px;
+            border-radius: 8px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+        }
+
+        .step-num {
+            flex-shrink: 0;
+            width: 32px;
+            height: 32px;
+            background: var(--aws-navy);
+            color: #ffffff;
+            font-weight: 700;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .step-content h4 {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--aws-navy);
+            margin-bottom: 4px;
+        }
+
+        .step-content p {
+            font-size: 14px;
+            color: #475569;
+            margin-bottom: 6px;
+        }
+
+        .step-meta {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* Architecture Flow Diagram */
+        .arch-flow {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            background: #f1f5f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 16px 0;
+            text-align: center;
+        }
+
+        .arch-node {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            padding: 12px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--aws-navy);
+            flex: 1;
+            min-width: 140px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .arch-arrow {
+            color: #94a3b8;
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        /* Code Block */
+        pre {
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            margin-top: 12px;
+        }
+
+        /* Footer */
+        footer {
+            margin-top: 32px;
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-color);
+            padding-top: 24px;
+        }
+
+        footer strong {
+            color: var(--text-main);
+        }
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+
+    <!-- Top Header -->
+    <header>
+        <div class="header-top">
+            <span class="badge-program">FCAJ Workforce Bootcamp 2026</span>
+            <div class="status-pill">
+                <span class="pulse-dot"></span>
+                <span>Production Status: Online</span>
+            </div>
+        </div>
+        <h1>Amazon S3 Static Website Hosting Portal</h1>
+        <p class="lead">Báo Cáo Thực Hành: Lab 000057 &amp; Cấu Trúc Bảo Mật Đối Tượng Đám Mây</p>
+    </header>
+
+    <!-- Key Metrics Grid -->
+    <section class="metrics-grid">
+        <div class="metric-card">
+            <div class="metric-title">AWS Service</div>
+            <div class="metric-value">Amazon S3</div>
+            <div class="metric-sub">Object Storage Engine</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-title">Primary Region</div>
+            <div class="metric-value">ap-southeast-1</div>
+            <div class="metric-sub">Singapore Datacenter</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-title">Access Policy</div>
+            <div class="metric-value">Public Read</div>
+            <div class="metric-sub">s3:GetObject Granted</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-title">Hosting Type</div>
+            <div class="metric-value">Static Website</div>
+            <div class="metric-sub">Zero-Server Compute</div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="main-grid">
+
+        <!-- Student & Identity Details -->
+        <article class="card">
+            <div class="card-header">
+                <h2 class="card-title">Thông Tin Định Danh Sinh Viên &amp; Tài Khoản</h2>
+                <span class="card-tag">Identity &amp; Access</span>
+            </div>
+            <table class="profile-table">
+                <tbody>
+                    <tr>
+                        <th>Họ và Tên Sinh Viên</th>
+                        <td><strong>Lâm Quang Huy</strong></td>
+                    </tr>
+                    <tr>
+                        <th>Tên Tài Khoản (Account Name)</th>
+                        <td><span class="code-inline">huylam</span></td>
+                    </tr>
+                    <tr>
+                        <th>AWS Account ID</th>
+                        <td><span class="code-inline">677994024390</span></td>
+                    </tr>
+                    <tr>
+                        <th>IAM User Thực Thi</th>
+                        <td><span class="code-inline">dev_admin</span> (AdministratorAccess)</td>
+                    </tr>
+                    <tr>
+                        <th>Đề Tài Capstone Project</th>
+                        <td><strong>Enterprise Agentic RAG Platform on AWS</strong></td>
+                    </tr>
+                    <tr>
+                        <th>Email Liên Hệ</th>
+                        <td><span class="code-inline">huyngu127@gmail.com</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </article>
+
+        <!-- Technical Architecture Flow -->
+        <article class="card">
+            <div class="card-header">
+                <h2 class="card-title">Luồng Kiến Trúc Xử Lý Truy Cập (Architecture Flow)</h2>
+                <span class="card-tag">Network &amp; Security</span>
+            </div>
+            <p style="font-size: 14px; color: #475569; margin-bottom: 12px;">
+                Mô hình định tuyến không máy chủ (Serverless Static Architecture): Người dùng truy vấn qua giao thức HTTP tới Endpoint toàn cầu của S3, hệ thống thẩm định Bucket Policy và phân phối tệp tin HTML tĩnh trực tiếp từ bộ nhớ đối tượng S3.
+            </p>
+            <div class="arch-flow">
+                <div class="arch-node">
+                    Client Browser<br>
+                    <span style="font-size: 11px; color: #64748b;">HTTP Request</span>
+                </div>
+                <div class="arch-arrow">&rarr;</div>
+                <div class="arch-node">
+                    S3 Website Endpoint<br>
+                    <span style="font-size: 11px; color: #64748b;">Route 53 / AWS DNS</span>
+                </div>
+                <div class="arch-arrow">&rarr;</div>
+                <div class="arch-node">
+                    Bucket Policy Check<br>
+                    <span style="font-size: 11px; color: #059669;">Effect: Allow GetObject</span>
+                </div>
+                <div class="arch-arrow">&rarr;</div>
+                <div class="arch-node">
+                    S3 Storage Bucket<br>
+                    <span style="font-size: 11px; color: #ff9900;">index.html Response</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- Implementation Steps Checkpoints -->
+        <article class="card">
+            <div class="card-header">
+                <h2 class="card-title">Các Tiêu Chí Kỹ Thuật Đã Triển Khai (Lab Checkpoints)</h2>
+                <span class="card-tag">Week 2 Worklog</span>
+            </div>
+            <div class="steps-container">
+                <div class="step-item">
+                    <div class="step-num">1</div>
+                    <div class="step-content">
+                        <h4>Khởi Tạo S3 Bucket Tiêu Chuẩn</h4>
+                        <p>Tạo bucket định danh toàn cầu <span class="code-inline">huylam-static-web-677994024390</span> tại region <span class="code-inline">ap-southeast-1</span> (Singapore), bảo đảm tính duy nhất và liên kết trực tiếp với mã sinh viên.</p>
+                        <span class="step-meta">Trạng thái: Hoàn tất khởi tạo &amp; SSE-S3 Encryption</span>
+                    </div>
+                </div>
+
+                <div class="step-item">
+                    <div class="step-num">2</div>
+                    <div class="step-content">
+                        <h4>Cấu Hình Block Public Access Có Kiểm Soát</h4>
+                        <p>Gỡ bỏ rào cản Block Public Access cục bộ theo đúng tiêu chuẩn kỹ thuật của dịch vụ Static Website Hosting, sẵn sàng tiếp nhận chính sách cấp quyền đọc công khai.</p>
+                        <span class="step-meta">Trạng thái: Xác nhận cảnh báo bảo mật theo quy định AWS</span>
+                    </div>
+                </div>
+
+                <div class="step-item">
+                    <div class="step-num">3</div>
+                    <div class="step-content">
+                        <h4>Kích Hoạt Dịch Vụ Static Website Hosting</h4>
+                        <p>Kích hoạt tính năng Static Website Hosting với tệp chỉ mục chính là <span class="code-inline">index.html</span>, sinh ra đường dẫn Endpoint truy cập công khai không cần cấu hình cụm máy chủ web EC2 phức tạp.</p>
+                        <span class="step-meta">Trạng thái: Hosting Type: Host a static website</span>
+                    </div>
+                </div>
+
+                <div class="step-item">
+                    <div class="step-num">4</div>
+                    <div class="step-content">
+                        <h4>Thực Thi Chính Sách S3 Bucket Policy (JSON)</h4>
+                        <p>Thiết lập tuyên bố cấp quyền <span class="code-inline">s3:GetObject</span> duy nhất cho tài nguyên bên trong bucket, tuân thủ nguyên tắc đặc quyền tối thiểu (Least Privilege) không cấp quyền ghi (PutObject) hay xóa (DeleteObject).</p>
+                        <span class="step-meta">Trạng thái: Publicly accessible được kích hoạt</span>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- S3 Policy Code View -->
+        <article class="card">
+            <div class="card-header">
+                <h2 class="card-title">Mã Nguồn S3 Bucket Policy Đã Áp Dụng</h2>
+                <span class="card-tag">JSON Policy</span>
+            </div>
+            <p style="font-size: 14px; color: #475569;">
+                Chính sách phân quyền bảo mật cấp quyền truy cập công khai chỉ đọc (Public Read) cho mọi người dùng đối với các tài nguyên chứa trong Bucket:
+            </p>
+            <pre><code>{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "PublicReadGetObject",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Action": "s3:GetObject",
+            "Resource": "arn:aws:s3:::huylam-static-web-677994024390/*"
+        }
+    ]
+}</code></pre>
+        </article>
+
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>Báo cáo thực hành kỹ thuật Tuần 2 - Chương trình <strong>FCAJ Workforce Bootcamp 2026</strong></p>
+        <p style="margin-top: 4px;">Hạ tầng lưu trữ: <strong>Amazon Simple Storage Service (S3)</strong> | Tài khoản: <strong>huylam (677994024390)</strong></p>
+    </footer>
+
+</div>
+
+</body>
+</html>
