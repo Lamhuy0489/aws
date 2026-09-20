@@ -1,0 +1,130 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  AWS CloudFormation Lab 000037 - Infrastructure as Code (IaC)
+  Student: Lam Quang Huy | Student ID: 0212267 | Class: 67CS - HUCE
+  FCJ Cloud Journey Bootcamp 2026
+
+Parameters:
+  EnvironmentName:
+    Type: String
+    Default: FCJ-Bootcamp-2026
+    Description: Deployment environment tag name
+
+  StudentName:
+    Type: String
+    Default: Lam Quang Huy
+    Description: Student full name
+
+  StudentID:
+    Type: String
+    Default: "0212267"
+    Description: Student ID number
+
+  InstanceType:
+    Type: String
+    Default: t3.micro
+    AllowedValues:
+      - t2.micro
+      - t3.micro
+    Description: Amazon EC2 instance type (Free Tier eligible)
+
+  LatestAmiId:
+    Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
+    Default: '/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-6.1-x86_64'
+    Description: Automatically resolve the latest Amazon Linux 2023 AMI via AWS Systems Manager Parameter Store
+
+Resources:
+  # 1. Security Group allowing HTTP Port 80
+  WebServerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security Group for CloudFormation Web Server - Lam Quang Huy 0212267
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: huylam-cfn-sg
+        - Key: Project
+          Value: !Ref EnvironmentName
+        - Key: StudentID
+          Value: !Ref StudentID
+
+  # 2. EC2 Web Server Instance
+  WebServerInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref InstanceType
+      ImageId: !Ref LatestAmiId
+      SecurityGroupIds:
+        - !Ref WebServerSecurityGroup
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          dnf update -y
+          dnf install -y httpd
+          systemctl start httpd
+          systemctl enable httpd
+          cat << 'EOF' > /var/www/html/index.html
+          <!DOCTYPE html>
+          <html lang="vi">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>AWS CloudFormation Lab 000037 - Lam Quang Huy</title>
+            <style>
+              body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 40px; background: #0f172a; color: #f8fafc; }
+              .card { max-width: 720px; margin: auto; background: #1e293b; padding: 36px; border-radius: 12px; border: 2px solid #3b82f6; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+              h1 { color: #60a5fa; margin-top: 0; font-size: 26px; }
+              .badge { display: inline-block; background: #2563eb; color: #fff; padding: 6px 14px; border-radius: 9999px; font-weight: bold; font-size: 13px; margin-bottom: 20px; letter-spacing: 0.5px; }
+              table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+              th, td { text-align: left; padding: 14px 12px; border-bottom: 1px solid #334155; }
+              th { color: #94a3b8; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
+              td { color: #e2e8f0; font-weight: 500; font-size: 15px; }
+              .footer { margin-top: 28px; font-size: 13px; color: #64748b; text-align: center; }
+            </style>
+          </head>
+          <body>
+            <div class="card">
+              <span class="badge">AWS CLOUDFORMATION LAB 000037</span>
+              <h1>Infrastructure as Code (IaC)</h1>
+              <p>Trang web phuc vu xac thuc trien khai ha tang tu dong bang AWS CloudFormation Stack.</p>
+              <table>
+                <tr><th>Hoc vien</th><td>${StudentName}</td></tr>
+                <tr><th>MSSV</th><td>${StudentID}</td></tr>
+                <tr><th>Lop</th><td>67CS - Truong DH Xay dung Ha Noi (HUCE)</td></tr>
+                <tr><th>Stack Name</th><td>${AWS::StackName}</td></tr>
+                <tr><th>Region</th><td>${AWS::Region}</td></tr>
+                <tr><th>Du an</th><td>${EnvironmentName}</td></tr>
+              </table>
+              <div class="footer">FCJ Cloud Journey Bootcamp 2026 - Powered by AWS CloudFormation</div>
+            </div>
+          </body>
+          </html>
+          EOF
+      Tags:
+        - Key: Name
+          Value: huylam-cfn-webserver
+        - Key: Project
+          Value: !Ref EnvironmentName
+        - Key: StudentID
+          Value: !Ref StudentID
+
+Outputs:
+  StackName:
+    Description: Name of the deployed CloudFormation Stack
+    Value: !Ref "AWS::StackName"
+
+  WebServerPublicIp:
+    Description: Public IPv4 address of the web server
+    Value: !GetAtt WebServerInstance.PublicIp
+
+  WebServerUrl:
+    Description: HTTP URL to access the deployed website
+    Value: !Sub "http://${WebServerInstance.PublicIp}"
+
+  SecurityGroupId:
+    Description: ID of the Security Group created
+    Value: !Ref WebServerSecurityGroup
