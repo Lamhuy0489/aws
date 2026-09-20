@@ -6,14 +6,14 @@ Bảng kiểm tra này tổng hợp các bài lab thực hành cốt lõi từ `
 
 ## 1. Giai đoạn 1: Thiết lập & Nền tảng cốt lõi (Bắt buộc)
 
-- [ ] **Lab 000001**: Tạo tài khoản AWS cá nhân và bảo mật tài khoản root bằng MFA.
-- [ ] **Lab 000007**: Cấu hình AWS Budgets với cảnh báo ngưỡng 5 USD và 10 USD gửi về email.
-- [ ] **Lab 000002**: Quản lý truy cập IAM (Tạo IAM Group, IAM User cho công việc hàng ngày, áp dụng chính sách Least Privilege).
-- [ ] **Lab 000003**: Xây dựng hệ thống mạng VPC (Public Subnet, Private Subnet, Internet Gateway, Route Tables).
-- [ ] **Lab 000004**: Khởi tạo và kết nối máy chủ ảo Amazon EC2 (Linux/Ubuntu), cấu hình Security Group.
-- [ ] **Lab 000048**: Tạo và gán IAM Role cho EC2 để truy cập S3 mà không cần lưu Access Key trên máy chủ.
-- [ ] **Lab 000011**: Cài đặt AWS CLI trên máy cục bộ, cấu hình cấu hình profile kết nối với AWS an toàn.
-- [ ] **Lab 000057**: Tạo S3 Bucket, cấu hình quyền và bật tính năng Static Website Hosting.
+- [x] **Lab 000001**: Tạo tài khoản AWS cá nhân và bảo mật tài khoản root bằng MFA.
+- [x] **Lab 000007**: Cấu hình AWS Budgets với cảnh báo ngưỡng 5 USD và 10 USD gửi về email.
+- [x] **Lab 000002**: Quản lý truy cập IAM (Tạo IAM Group, IAM User cho công việc hàng ngày, áp dụng chính sách Least Privilege).
+- [x] **Lab 000003**: Xây dựng hệ thống mạng VPC (Public Subnet, Private Subnet, Internet Gateway, Route Tables).
+- [x] **Lab 000004**: Khởi tạo và kết nối máy chủ ảo Amazon EC2 (Linux/Ubuntu), cấu hình Security Group.
+- [x] **Lab 000048**: Tạo và gán IAM Role cho EC2 để truy cập S3 mà không cần lưu Access Key trên máy chủ.
+- [x] **Lab 000011**: Cài đặt AWS CLI trên máy cục bộ, cấu hình cấu hình profile kết nối với AWS an toàn.
+- [x] **Lab 000057**: Tạo S3 Bucket, cấu hình quyền và bật tính năng Static Website Hosting.
 - [ ] **Lab 000008**: Tạo bảng điều khiển giám sát (Dashboard) và thiết lập cảnh báo với Amazon CloudWatch Alarms.
 
 ---
