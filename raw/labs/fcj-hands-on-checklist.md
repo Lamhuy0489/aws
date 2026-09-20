@@ -16,6 +16,9 @@ Bảng kiểm tra này tổng hợp các bài lab thực hành cốt lõi từ `
 - [x] **Lab 000011**: Cài đặt AWS CLI trên máy cục bộ, cấu hình cấu hình profile kết nối với AWS an toàn.
 - [x] **Lab 000057**: Tạo S3 Bucket, cấu hình quyền và bật tính năng Static Website Hosting.
 - [x] **Lab 000008**: Tạo bảng điều khiển giám sát (Dashboard) và thiết lập cảnh báo với Amazon CloudWatch Alarms.
+- [x] **Lab 000031**: Quản trị máy chủ an toàn với AWS Systems Manager (Fleet Manager, Session Manager, Run Command theo chuẩn Zero Trust).
+- [x] **Lab 000058**: Quản lý tham số cấu hình và khóa bí mật với AWS Systems Manager Parameter Store.
+- [x] **Lab 000027**: Quản lý và phân loại tài nguyên tập trung với AWS Resource Groups & Tag Editor.
 
 ---
 
@@ -26,7 +29,7 @@ Bảng kiểm tra này tổng hợp các bài lab thực hành cốt lõi từ `
 - [ ] **Lab 000078**: Xây dựng Backend Serverless (AWS Lambda đọc/ghi dữ liệu DynamoDB và thao tác với file trên S3).
 - [ ] **Lab 000079**: Thiết lập Amazon API Gateway kết nối với AWS Lambda, kích hoạt CORS để gọi từ Frontend.
 - [ ] **Lab 000081**: Tạo User Pool trên Amazon Cognito và tích hợp xác thực người dùng cho API Gateway.
-- [ ] **Lab 000096**: Quản lý thông tin bí mật với AWS Secrets Manager và AWS Systems Manager (SSM) Parameter Store.
+- [x] **Lab 000096**: Quản lý thông tin bí mật với AWS Secrets Manager và AWS Systems Manager (SSM) Parameter Store.
 
 ---
 
