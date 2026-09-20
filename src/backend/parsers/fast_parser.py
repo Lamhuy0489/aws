@@ -129,23 +129,29 @@ class FastNativeParser:
         return parsed_pages
 
     def _format_text_block(self, text: str, block_tuple: tuple) -> str:
-        """Tự động phân loại tiêu đề, nhãn giá trị và danh sách để giữ bố cục Markdown."""
+        """Tự động phân loại tiêu đề, nhãn giá trị và danh sách để giữ bố cục Markdown chuẩn."""
         lines = [line.strip() for line in text.split("\n") if line.strip()]
         if not lines:
             return ""
 
         first_line = lines[0]
-        # Tiêu đề lớn (Chữ in hoa toàn bộ hoặc kết thúc bằng dấu hai chấm, độ dài vừa phải)
+        # Tiêu đề lớn của tài liệu: Tự động căn giữa
+        title_keywords = ["HÓA ĐƠN", "HỢP ĐỒNG", "CỘNG HÒA", "ĐỘC LẬP", "BÁO CÁO", "BIÊN BẢN", "THÔNG BÁO", "CHỨNG NHẬN"]
         if len(lines) == 1:
-            if first_line.isupper() and len(first_line) < 100:
+            if any(kw in first_line.upper() for kw in title_keywords):
                 return f"# {first_line}"
+            elif first_line.isupper() and len(first_line) < 100:
+                return f"## {first_line}"
             elif first_line.endswith(":") and len(first_line) < 80:
                 return f"### {first_line}"
 
         # Xử lý các cặp nhãn Key: Value (ví dụ: Số hóa đơn: INV-001 | Ngày: 21/09/2026)
         formatted_lines = []
         for line in lines:
-            # Phát hiện nhãn đầu dòng: "Từ khóa: Giá trị"
+            if any(kw in line.upper() for kw in title_keywords):
+                formatted_lines.append(f"# {line}")
+                continue
+
             match = re.match(r"^([A-ZÀ-Ỹa-zà-ỹ0-9\s/_-]{2,30}):\s*(.+)$", line)
             if match and not line.startswith("-"):
                 key, val = match.groups()
@@ -183,7 +189,7 @@ class FastNativeParser:
 
     @staticmethod
     def _convert_table_to_markdown(matrix: List[List[Any]]) -> str:
-        """Chuyển đổi ma trận hàng/cột thành bảng Markdown chuẩn có kẻ ô."""
+        """Chuyển đổi ma trận hàng/cột thành bảng Markdown chuẩn có căn lề cột thông minh."""
         if not matrix or len(matrix) < 1:
             return ""
 
@@ -191,18 +197,29 @@ class FastNativeParser:
         for row in matrix:
             cleaned_rows.append([str(cell).replace("\n", " ").strip() if cell is not None else "" for cell in row])
 
-        # Loại bỏ các hàng hoàn toàn rỗng
         cleaned_rows = [r for r in cleaned_rows if any(cell for cell in r)]
         if not cleaned_rows:
             return ""
 
         headers = cleaned_rows[0]
-        # Nếu dòng header toàn rỗng, đặt tiêu đề mặc định
         if not any(headers):
             headers = [f"Cột {i+1}" for i in range(len(headers))]
 
+        # Tự động căn lề thông minh theo loại dữ liệu cột
+        separators = []
+        for h in headers:
+            h_lower = str(h).lower()
+            if any(k in h_lower for k in ["stt", "no", "id", "thứ tự", "index"]):
+                separators.append(":---:")  # Căn giữa cho cột STT / Mã
+            elif any(k in h_lower for k in ["giá", "tiền", "phí", "tổng", "vat", "thuế", "price", "amount", "total"]):
+                separators.append("---:")   # Căn phải cho số tiền / giá cả
+            elif any(k in h_lower for k in ["số lượng", "qty", "quantity", "đơn vị", "đvt"]):
+                separators.append(":---:")  # Căn giữa cho số lượng
+            else:
+                separators.append(":---")   # Căn trái cho tên hàng hóa, diễn giải
+
         header_line = "| " + " | ".join(headers) + " |"
-        separator_line = "| " + " | ".join(["---"] * len(headers)) + " |"
+        separator_line = "| " + " | ".join(separators) + " |"
 
         body_lines = []
         for row in cleaned_rows[1:]:

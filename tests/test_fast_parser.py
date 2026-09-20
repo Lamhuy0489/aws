@@ -11,7 +11,7 @@ def test_convert_table_to_markdown():
     md = FastNativeParser._convert_table_to_markdown(matrix)
     
     assert "| Hạng mục | Số lượng | Đơn giá |" in md
-    assert "| --- | --- | --- |" in md
+    assert "| :--- | :---: | ---: |" in md
     assert "| Máy chủ EC2 | 2 | 500,000 |" in md
     assert "| Lưu trữ S3 | 50 GB | 1,000 |" in md
 
