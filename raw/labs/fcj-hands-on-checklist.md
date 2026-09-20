@@ -15,7 +15,7 @@ Bảng kiểm tra này tổng hợp các bài lab thực hành cốt lõi từ `
 - [x] **Lab 000006**: Tự động co giãn hệ thống với EC2 Auto Scaling, Application Load Balancer (ALB), Launch Templates và High Availability Multi-AZ.
 - [x] **Lab 000011**: Cài đặt AWS CLI trên máy cục bộ, cấu hình cấu hình profile kết nối với AWS an toàn.
 - [x] **Lab 000057**: Tạo S3 Bucket, cấu hình quyền và bật tính năng Static Website Hosting.
-- [ ] **Lab 000008**: Tạo bảng điều khiển giám sát (Dashboard) và thiết lập cảnh báo với Amazon CloudWatch Alarms.
+- [x] **Lab 000008**: Tạo bảng điều khiển giám sát (Dashboard) và thiết lập cảnh báo với Amazon CloudWatch Alarms.
 
 ---
 
