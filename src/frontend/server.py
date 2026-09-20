@@ -1,7 +1,14 @@
 import os
+import sys
 import io
 import uuid
 import logging
+
+# Đảm bảo thư mục gốc dự án luôn nằm trong PYTHONPATH
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
 from flask import Flask, request, jsonify, render_template, send_file
 from src.backend.config.settings import AppSettings
 from src.backend.parsers.hybrid_engine import HybridDocumentEngine, DocumentResult
