@@ -26,6 +26,21 @@ class OCRDispatcher:
         if not image_bytes:
             return ""
 
+        # Kiểm thử cục bộ không cần mạng (LOCAL_MOCK)
+        if self.settings.ocr_mode == "LOCAL_MOCK":
+            logger.info("Đang xử lý ở chế độ LOCAL_MOCK: Trả về kết quả OCR mẫu...")
+            return (
+                "## THÔNG TIN HÓA ĐƠN DỊCH VỤ (MẪU OCR SCAN)\n\n"
+                "| Mã Dịch Vụ | Tên Dịch Vụ / Hàng Hóa | Số Lượng | Đơn Giá (VNĐ) | Thành Tiền (VNĐ) |\n"
+                "| :--- | :--- | :--- | :--- | :--- |\n"
+                "| AWS-EC2-01 | Máy Chủ Ảo Amazon EC2 t3.medium | 2 | 750,000 | 1,500,000 |\n"
+                "| AWS-S3-02 | Lưu Trữ Amazon S3 Standard (GB) | 100 | 1,200 | 120,000 |\n"
+                "| AWS-DDB-03 | Cơ Sở Dữ Liệu DynamoDB On-Demand | 1 | 250,000 | 250,000 |\n\n"
+                "**Tổng tiền trước thuế**: 1,870,000 VNĐ\n"
+                "**Thuế GTGT (10%)**: 187,000 VNĐ\n"
+                "**Tổng giá trị thanh toán**: 2,057,000 VNĐ"
+            )
+
         # Thử gọi Kaggle Endpoint nếu ở chế độ HYBRID_KAGGLE
         if self.settings.ocr_mode == "HYBRID_KAGGLE" and self.settings.kaggle_endpoint:
             try:
