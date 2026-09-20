@@ -133,3 +133,36 @@ Bài thực hành chứng minh tính ưu việt của mô hình quản trị h�
 - Kiểm soát truy cập tập trung thông qua AWS IAM và ghi vết đầy đủ hoạt động qua AWS CloudTrail.
 - Quản lý tập trung cấu hình và bí mật ứng dụng với cơ chế mã hóa tiêu chuẩn từ AWS KMS.
 - Vận hành và giám sát hàng loạt máy chủ bằng Run Command nhanh chóng, an toàn và có thể lập trình tự động.
+
+---
+
+## 5. Quy trình dọn dẹp tài nguyên (FinOps Teardown)
+
+Để duy trì chi phí ở mức 0 USD và bảo toàn toàn vẹn định mức miễn phí của gói AWS Free Tier, toàn bộ các tài nguyên sau bài kiểm nghiệm được giải phóng theo đúng trình tự kỹ thuật:
+
+```bash
+# 1. Chấm dứt máy chủ ảo EC2 (Terminate Instance)
+aws ec2 terminate-instances --instance-ids i-07c150e87aa231c61
+
+# Chờ máy chủ chuyển đổi trạng thái sang terminated hoàn tất
+aws ec2 wait instance-terminated --instance-ids i-07c150e87aa231c61
+
+# 2. Xóa các tham số trong Parameter Store
+aws ssm delete-parameters --names \
+  "/huylam/app/db_password" \
+  "/huylam/app/environment" \
+  "/huylam/app/student_name"
+
+# 3. Xóa nhóm tài nguyên Resource Groups
+aws resource-groups delete-group --group-name huylam-fcj-resources
+
+# 4. Xóa nhóm bảo mật Security Group (khi instance đã terminated)
+aws ec2 delete-security-group --group-id sg-08a93d881545a9cf8
+
+# 5. Kiểm tra xác nhận không còn tài nguyên hoạt động
+aws ec2 describe-instances --filters "Name=instance-state-name,Values=running,pending" \
+  --query "Reservations[*].Instances[*].[InstanceId,State.Name]" --output table
+aws ssm describe-parameters --query "Parameters[*].[Name]" --output table
+aws resource-groups list-groups --query "GroupIdentifiers[*].[GroupName]" --output table
+```
+*Trạng thái sau dọn dẹp: 100% tài nguyên đã được thu hồi, chi phí phát sinh duy trì ở mức 0 USD.*
