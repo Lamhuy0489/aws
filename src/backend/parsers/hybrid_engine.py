@@ -17,6 +17,7 @@ class DocumentResult(BaseModel):
     full_markdown: str
     processing_time_seconds: float
     pages: List[ParsedPage]
+    page_images: List[str] = []
 
 class HybridDocumentEngine:
     """Bộ điều phối hợp nhất xử lý tài liệu đa tầng (Fast-Path kết hợp Selective Vision OCR)."""
@@ -73,6 +74,8 @@ class HybridDocumentEngine:
                 assembled_markdown.append(page_header + (ocr_text or page.markdown_content))
 
         full_md = "\n\n---\n\n".join(assembled_markdown)
+        page_images = [p.preview_png_b64 for p in pages if p.preview_png_b64]
+
         return DocumentResult(
             document_id=document_id or filename,
             filename=filename,
@@ -81,20 +84,24 @@ class HybridDocumentEngine:
             scanned_pages_count=scanned_count,
             full_markdown=full_md,
             processing_time_seconds=0.0,
-            pages=pages
+            pages=pages,
+            page_images=page_images
         )
 
     def _process_single_image(self, image_bytes: bytes, filename: str, document_id: str) -> DocumentResult:
+        import base64
         logger.info(f"Xử lý tệp hình ảnh đơn lẻ: {filename} thông qua Tầng 2 OCR...")
         ocr_text = self.ocr_dispatcher.ocr_image(image_bytes)
         
+        b64_img = "data:image/jpeg;base64," + base64.b64encode(image_bytes).decode("utf-8")
         page = ParsedPage(
             page_number=1,
             is_scanned=True,
             markdown_content=ocr_text,
             character_count=len(ocr_text),
             tables_count=1 if "|" in ocr_text else 0,
-            image_bytes=image_bytes
+            image_bytes=image_bytes,
+            preview_png_b64=b64_img
         )
 
         return DocumentResult(
@@ -105,5 +112,6 @@ class HybridDocumentEngine:
             scanned_pages_count=1,
             full_markdown=ocr_text,
             processing_time_seconds=0.0,
-            pages=[page]
+            pages=[page],
+            page_images=[b64_img]
         )

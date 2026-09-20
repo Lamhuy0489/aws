@@ -7,39 +7,70 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
-        /* Tùy biến bảng biểu trong nội dung Markdown */
+        /* Bảng biểu chuẩn có kẻ khung rõ ràng */
         .markdown-body table {
             width: 100%;
             border-collapse: collapse;
-            margin: 1rem 0;
+            margin: 1.25rem 0;
+            background: #ffffff;
         }
         .markdown-body th, .markdown-body td {
             border: 1px solid #cbd5e1;
-            padding: 0.5rem 0.75rem;
+            padding: 0.6rem 0.85rem;
             text-align: left;
+            font-size: 0.85rem;
         }
         .markdown-body th {
             background-color: #f1f5f9;
-            font-weight: 600;
+            color: #1e293b;
+            font-weight: 700;
         }
         .markdown-body tr:nth-child(even) {
             background-color: #f8fafc;
         }
-        .markdown-body h1, .markdown-body h2, .markdown-body h3 {
-            font-weight: 700;
+        .markdown-body tr:hover {
+            background-color: #f1f5f9;
+        }
+        .markdown-body h1 {
+            font-size: 1.35rem;
+            font-weight: 800;
             color: #0f172a;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 0.35rem;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        .markdown-body h2 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #1e293b;
             margin-top: 1.25rem;
             margin-bottom: 0.5rem;
         }
-        .markdown-body h1 { font-size: 1.5rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.25rem; }
-        .markdown-body h2 { font-size: 1.25rem; }
-        .markdown-body h3 { font-size: 1.1rem; }
-        .markdown-body ul { list-style-type: disc; padding-left: 1.5rem; margin: 0.5rem 0; }
+        .markdown-body h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #334155;
+            margin-top: 1rem;
+            margin-bottom: 0.35rem;
+        }
+        .markdown-body hr {
+            border: 0;
+            border-top: 2px dashed #cbd5e1;
+            margin: 2rem 0;
+        }
+        .markdown-body p {
+            margin-bottom: 0.65rem;
+            line-height: 1.6;
+        }
+        .markdown-body strong {
+            color: #0f172a;
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans">
 
-    <!-- Thanh điều hướng Header -->
+    <!-- Header -->
     <header class="bg-slate-900 text-white border-b border-slate-800 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between gap-2">
             <div>
@@ -48,25 +79,25 @@
             </div>
             <div class="flex items-center gap-3 text-xs">
                 <span class="bg-slate-800 text-slate-300 px-2.5 py-1 rounded border border-slate-700">Che do: Dual-Mode</span>
-                <span class="bg-sky-950 text-sky-300 px-2.5 py-1 rounded border border-sky-800">Layout-Preserving</span>
+                <span class="bg-sky-950 text-sky-300 px-2.5 py-1 rounded border border-sky-800">Bao toan bo cuc & Bang bieu</span>
                 <span class="bg-emerald-950 text-emerald-300 px-2.5 py-1 rounded border border-emerald-800">Chi phi: 0 USD</span>
             </div>
         </div>
     </header>
 
-    <!-- Khu vực điều khiển chính -->
+    <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-4 py-6 flex-1 w-full space-y-6">
 
         <!-- Bảng Cấu hình & Tải tệp -->
         <section class="bg-white rounded-lg border border-slate-200 p-5 shadow-sm">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-                <!-- Cột 1: Chế độ hoạt động -->
+                <!-- Cột 1: Cấu hình hệ thống -->
                 <div class="space-y-3">
-                    <h2 class="text-sm font-bold uppercase text-slate-600 tracking-wider">[1. CAU HINH HE THONG]</h2>
+                    <h2 class="text-xs font-bold uppercase text-slate-600 tracking-wider">[1. CAU HINH HE THONG]</h2>
                     <div>
                         <label class="block text-xs font-semibold text-slate-700 mb-1">Chế độ vận hành (OCR Mode):</label>
-                        <select id="select-mode" class="w-full text-sm bg-slate-50 border border-slate-300 rounded px-3 py-2 focus:ring-2 focus:ring-sky-500">
+                        <select id="select-mode" class="w-full text-xs bg-slate-50 border border-slate-300 rounded px-3 py-2 focus:ring-2 focus:ring-sky-500">
                             <option value="LOCAL_MOCK" selected>Local Mock (Kiểm thử nhanh offline)</option>
                             <option value="HYBRID_KAGGLE">Hybrid Kaggle (Cloudflare Tunnel)</option>
                             <option value="STANDALONE">Standalone (Google Gemini API)</option>
@@ -89,9 +120,9 @@
                     </div>
                 </div>
 
-                <!-- Cột 2: Khu vực Upload tệp -->
+                <!-- Cột 2: Upload tệp -->
                 <div class="space-y-3">
-                    <h2 class="text-sm font-bold uppercase text-slate-600 tracking-wider">[2. TAI TEP TAI LIEU]</h2>
+                    <h2 class="text-xs font-bold uppercase text-slate-600 tracking-wider">[2. TAI TEP TAI LIEU]</h2>
                     <div id="drop-zone" class="border-2 border-dashed border-slate-300 hover:border-sky-500 bg-slate-50 rounded-lg p-5 text-center cursor-pointer transition flex flex-col items-center justify-center min-h-[120px]">
                         <input type="file" id="file-input" accept=".pdf,.png,.jpg,.jpeg" class="hidden">
                         <p class="text-xs font-semibold text-slate-700">Kéo thả tệp hoặc bấm vào đây để chọn</p>
@@ -100,16 +131,16 @@
                     </div>
                 </div>
 
-                <!-- Cột 3: Tệp mẫu và Nút thực thi -->
+                <!-- Cột 3: Tệp mẫu và nút bấm -->
                 <div class="space-y-3 flex flex-col justify-between">
                     <div>
-                        <h2 class="text-sm font-bold uppercase text-slate-600 tracking-wider mb-2">[3. TEP KIEM THU CO SAN]</h2>
+                        <h2 class="text-xs font-bold uppercase text-slate-600 tracking-wider mb-2">[3. TEP KIEM THU CO SAN]</h2>
                         <div class="grid grid-cols-1 gap-2">
                             <button id="btn-sample-invoice" class="text-left text-xs bg-slate-100 hover:bg-slate-200 text-slate-800 px-3 py-2 rounded border border-slate-200 transition font-medium">
-                                [Chon Mau 1] Hoa Don Dich Vu (2 trang: So + Scan)
+                                [Chon Mau 1] Hoa Don AWS (2 trang: So + Scan)
                             </button>
                             <button id="btn-sample-contract" class="text-left text-xs bg-slate-100 hover:bg-slate-200 text-slate-800 px-3 py-2 rounded border border-slate-200 transition font-medium">
-                                [Chon Mau 2] Hop Dong Kinh Te Tieng Viet
+                                [Chon Mau 2] Hop Dong Kinh Te Co Bang Chu Ky
                             </button>
                         </div>
                     </div>
@@ -122,7 +153,7 @@
             </div>
         </section>
 
-        <!-- Thanh thống kê Telemetry sau khi xử lý -->
+        <!-- Telemetry Metrics Bar -->
         <section id="telemetry-bar" class="hidden bg-slate-900 text-white rounded-lg p-4 shadow-sm border border-slate-800">
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
                 <div class="border-r border-slate-800 last:border-0">
@@ -148,47 +179,58 @@
         <section id="results-view" class="hidden grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
             
             <!-- Cửa sổ trái: Xem trước tài liệu gốc -->
-            <div class="bg-white rounded-lg border border-slate-200 shadow-sm flex flex-col h-[700px]">
+            <div class="bg-white rounded-lg border border-slate-200 shadow-sm flex flex-col h-[750px]">
                 <div class="px-4 py-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
-                    <h3 class="text-xs font-bold uppercase text-slate-700 tracking-wider">[TAI LIEU GOC (ORIGINAL PREVIEW)]</h3>
-                    <span id="preview-page-indicator" class="text-xs font-mono text-slate-500"></span>
+                    <h3 class="text-xs font-bold uppercase text-slate-700 tracking-wider">[TAI LIEU GOC (ORIGINAL DOCUMENT)]</h3>
+                    
+                    <!-- Bộ chuyển trang tài liệu gốc -->
+                    <div id="page-nav-controls" class="flex items-center gap-2 text-xs font-mono">
+                        <button id="btn-prev-page" class="px-2 py-0.5 bg-slate-200 hover:bg-slate-300 rounded text-slate-700 font-bold">&lt;</button>
+                        <span id="page-indicator" class="font-bold text-slate-700">Trang 1 / 1</span>
+                        <button id="btn-next-page" class="px-2 py-0.5 bg-slate-200 hover:bg-slate-300 rounded text-slate-700 font-bold">&gt;</button>
+                    </div>
                 </div>
-                <div class="p-4 flex-1 overflow-auto bg-slate-100 flex items-center justify-center">
+                <div class="p-4 flex-1 overflow-auto bg-slate-200 flex items-center justify-center">
                     <div id="preview-container" class="w-full h-full flex items-center justify-center">
-                        <iframe id="pdf-frame" class="w-full h-full rounded border border-slate-300 hidden"></iframe>
-                        <img id="image-frame" class="max-w-full max-h-full object-contain rounded border border-slate-300 hidden" />
-                        <p id="no-preview-text" class="text-xs text-slate-400">Khong co ban xem truoc</p>
+                        <img id="image-frame" class="max-w-full max-h-full object-contain rounded shadow bg-white" />
+                        <p id="no-preview-text" class="text-xs text-slate-400">Đang nạp bản xem trước...</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Cửa sổ phải: Kết quả bóc tách (Rendered Markdown & Tables) -->
-            <div class="bg-white rounded-lg border border-slate-200 shadow-sm flex flex-col h-[700px]">
+            <!-- Cửa sổ phải: Kết quả bóc tách giữ nguyên bố cục -->
+            <div class="bg-white rounded-lg border border-slate-200 shadow-sm flex flex-col h-[750px]">
                 <div class="px-4 py-3 border-b border-slate-200 bg-slate-50 flex flex-wrap items-center justify-between gap-2">
                     <div class="flex items-center gap-2">
                         <button id="tab-rendered" class="text-xs font-bold px-2.5 py-1 bg-white border border-slate-300 text-sky-700 rounded shadow-xs">
-                            [XEM TRINH BAY (RENDERED)]
+                            [XEM TRINH BAY (RENDERED PREVIEW)]
                         </button>
                         <button id="tab-raw" class="text-xs font-medium px-2.5 py-1 bg-transparent text-slate-600 hover:text-slate-900 rounded">
                             [MA NGUON RAW MARKDOWN]
                         </button>
                     </div>
                     <div class="flex items-center gap-2">
-                        <button id="btn-copy" class="text-[11px] font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded border border-slate-300 transition">
+                        <button id="btn-copy" class="text-[11px] font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1 rounded border border-slate-300 transition">
                             [SAO CHEP]
                         </button>
-                        <button id="btn-download-md" class="text-[11px] font-semibold bg-sky-50 hover:bg-sky-100 text-sky-700 px-2.5 py-1 rounded border border-sky-300 transition">
+                        <button id="btn-download-md" class="text-[11px] font-semibold bg-sky-50 hover:bg-sky-100 text-sky-700 px-2 py-1 rounded border border-sky-300 transition">
                             [XUAT .MD]
                         </button>
-                        <button id="btn-download-docx" class="text-[11px] font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded border border-emerald-300 transition">
+                        <button id="btn-download-docx" class="text-[11px] font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 px-2 py-1 rounded border border-emerald-300 transition">
                             [XUAT WORD .DOCX]
                         </button>
                     </div>
                 </div>
 
+                <!-- Banner thông báo giữ bố cục -->
+                <div class="bg-sky-50 border-b border-sky-100 px-4 py-2 text-[11px] font-medium text-sky-800 flex items-center justify-between">
+                    <span>Trạng thái: Đã bảo toàn cấu trúc bảng biểu, tiêu đề và số liệu nguyên bản</span>
+                    <span class="font-mono text-sky-600 text-[10px]">[LAYOUT-PRESERVED]</span>
+                </div>
+
                 <!-- Vùng nội dung kết quả -->
-                <div class="p-6 flex-1 overflow-auto">
-                    <div id="rendered-output" class="markdown-body text-sm leading-relaxed"></div>
+                <div class="p-6 flex-1 overflow-auto bg-white">
+                    <div id="rendered-output" class="markdown-body text-sm"></div>
                     <textarea id="raw-output" readonly class="w-full h-full font-mono text-xs bg-slate-50 p-4 rounded border border-slate-300 resize-none hidden"></textarea>
                 </div>
             </div>
@@ -202,10 +244,11 @@
         Enterprise Cloud Internship Portfolio | First Cloud Journey (FCJ) Capstone Project
     </footer>
 
-    <!-- Logic JavaScript điều khiển giao diện -->
+    <!-- Logic JavaScript -->
     <script>
         let currentFile = null;
         let lastResult = null;
+        let currentPageIndex = 0;
 
         const selectMode = document.getElementById("select-mode");
         const kaggleGroup = document.getElementById("kaggle-url-group");
@@ -220,18 +263,18 @@
         const rawOutput = document.getElementById("raw-output");
         const tabRendered = document.getElementById("tab-rendered");
         const tabRaw = document.getElementById("tab-raw");
-        const pdfFrame = document.getElementById("pdf-frame");
         const imageFrame = document.getElementById("image-frame");
         const noPreviewText = document.getElementById("no-preview-text");
+        const pageIndicator = document.getElementById("page-indicator");
+        const btnPrevPage = document.getElementById("btn-prev-page");
+        const btnNextPage = document.getElementById("btn-next-page");
 
-        // Thay đổi chế độ
         selectMode.addEventListener("change", (e) => {
             const val = e.target.value;
             kaggleGroup.classList.toggle("hidden", val !== "HYBRID_KAGGLE");
             geminiGroup.classList.toggle("hidden", val !== "STANDALONE");
         });
 
-        // Kéo thả tệp
         dropZone.addEventListener("click", () => fileInput.click());
         fileInput.addEventListener("change", (e) => {
             if (e.target.files && e.target.files[0]) {
@@ -260,22 +303,8 @@
             currentFile = file;
             selectedFileName.textContent = "[Tệp đã chọn: " + file.name + " (" + (file.size / 1024).toFixed(1) + " KB)]";
             selectedFileName.classList.remove("hidden");
-
-            // Xem trước tệp gốc
-            const fileUrl = URL.createObjectURL(file);
-            noPreviewText.classList.add("hidden");
-            if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
-                pdfFrame.src = fileUrl;
-                pdfFrame.classList.remove("hidden");
-                imageFrame.classList.add("hidden");
-            } else {
-                imageFrame.src = fileUrl;
-                imageFrame.classList.remove("hidden");
-                pdfFrame.classList.add("hidden");
-            }
         }
 
-        // Chọn tệp mẫu có sẵn
         document.getElementById("btn-sample-invoice").addEventListener("click", () => loadSample("sample_invoice.pdf"));
         document.getElementById("btn-sample-contract").addEventListener("click", () => loadSample("sample_contract.pdf"));
 
@@ -291,7 +320,6 @@
             }
         }
 
-        // Thực thi bóc tách
         btnProcess.addEventListener("click", async () => {
             if (!currentFile) {
                 alert("Vui lòng chọn hoặc tải lên một tệp trước khi bắt đầu.");
@@ -299,7 +327,7 @@
             }
 
             btnProcess.disabled = true;
-            btnProcess.textContent = "[DANG XU LY TAI LIEU...]";
+            btnProcess.textContent = "[DANG BOC TACH TAI LIEU...]";
 
             const formData = new FormData();
             formData.append("file", currentFile);
@@ -320,6 +348,7 @@
                 }
 
                 lastResult = await response.json();
+                currentPageIndex = 0;
                 renderResult(lastResult);
             } catch (e) {
                 alert("Lỗi: " + e.message);
@@ -330,7 +359,6 @@
         });
 
         function renderResult(data) {
-            // Cập nhật thanh đo lường
             document.getElementById("stat-total-pages").textContent = data.total_pages;
             document.getElementById("stat-digital-pages").textContent = data.digital_pages_count;
             document.getElementById("stat-scanned-pages").textContent = data.scanned_pages_count;
@@ -339,12 +367,40 @@
             telemetryBar.classList.remove("hidden");
             resultsView.classList.remove("hidden");
 
-            // Hiển thị Markdown đã render
+            // Cập nhật xem trước ảnh trang gốc
+            updatePagePreview();
+
+            // Hiển thị Markdown đã parse
             renderedOutput.innerHTML = marked.parse(data.full_markdown);
             rawOutput.value = data.full_markdown;
         }
 
-        // Tab chuyển đổi giữa Rendered và Raw
+        function updatePagePreview() {
+            if (lastResult && lastResult.page_images && lastResult.page_images.length > 0) {
+                noPreviewText.classList.add("hidden");
+                imageFrame.classList.remove("hidden");
+                imageFrame.src = lastResult.page_images[currentPageIndex];
+                pageIndicator.textContent = `Trang ${currentPageIndex + 1} / ${lastResult.page_images.length}`;
+            } else {
+                imageFrame.classList.add("hidden");
+                noPreviewText.classList.remove("hidden");
+            }
+        }
+
+        btnPrevPage.addEventListener("click", () => {
+            if (lastResult && lastResult.page_images && currentPageIndex > 0) {
+                currentPageIndex--;
+                updatePagePreview();
+            }
+        });
+
+        btnNextPage.addEventListener("click", () => {
+            if (lastResult && lastResult.page_images && currentPageIndex < lastResult.page_images.length - 1) {
+                currentPageIndex++;
+                updatePagePreview();
+            }
+        });
+
         tabRendered.addEventListener("click", () => {
             tabRendered.className = "text-xs font-bold px-2.5 py-1 bg-white border border-slate-300 text-sky-700 rounded shadow-xs";
             tabRaw.className = "text-xs font-medium px-2.5 py-1 bg-transparent text-slate-600 hover:text-slate-900 rounded";
@@ -359,7 +415,6 @@
             renderedOutput.classList.add("hidden");
         });
 
-        // Nút sao chép
         document.getElementById("btn-copy").addEventListener("click", () => {
             if (lastResult && lastResult.full_markdown) {
                 navigator.clipboard.writeText(lastResult.full_markdown);
@@ -367,7 +422,6 @@
             }
         });
 
-        // Nút tải tệp .md
         document.getElementById("btn-download-md").addEventListener("click", () => {
             if (!lastResult) return;
             const blob = new Blob([lastResult.full_markdown], { type: "text/markdown;charset=utf-8;" });
@@ -378,7 +432,6 @@
             a.click();
         });
 
-        // Nút tải tệp .docx
         document.getElementById("btn-download-docx").addEventListener("click", async () => {
             if (!lastResult) return;
             try {
