@@ -12,6 +12,7 @@ Bảng kiểm tra này tổng hợp các bài lab thực hành cốt lõi từ `
 - [x] **Lab 000003**: Xây dựng hệ thống mạng VPC (Public Subnet, Private Subnet, Internet Gateway, Route Tables).
 - [x] **Lab 000004**: Khởi tạo và kết nối máy chủ ảo Amazon EC2 (Linux/Ubuntu), cấu hình Security Group.
 - [x] **Lab 000048**: Tạo và gán IAM Role cho EC2 để truy cập S3 mà không cần lưu Access Key trên máy chủ.
+- [x] **Lab 000006**: Tự động co giãn hệ thống với EC2 Auto Scaling, Application Load Balancer (ALB), Launch Templates và High Availability Multi-AZ.
 - [x] **Lab 000011**: Cài đặt AWS CLI trên máy cục bộ, cấu hình cấu hình profile kết nối với AWS an toàn.
 - [x] **Lab 000057**: Tạo S3 Bucket, cấu hình quyền và bật tính năng Static Website Hosting.
 - [ ] **Lab 000008**: Tạo bảng điều khiển giám sát (Dashboard) và thiết lập cảnh báo với Amazon CloudWatch Alarms.
