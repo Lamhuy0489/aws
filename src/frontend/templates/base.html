@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Hybrid Document OCR Platform{% endblock %}</title>
+  
+  <!-- CSS Fonts & Theme -->
+  <link rel="stylesheet" href="/static/css/theme.css" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+  
+  <!-- Marked.js cho hien thi Markdown tren trinh duyet -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <!-- Header He Thong -->
+  <header class="site-header">
+    <div class="header-container">
+      <div class="brand-section">
+        <a href="/" class="brand-logo">
+          <span>HYBRID OCR</span>
+          <span class="brand-badge">Enterprise</span>
+        </a>
+
+        {% if user %}
+        <nav class="nav-menu">
+          <a href="/studio" class="nav-link {% if active_page == 'studio' %}active{% endif %}" data-i18n="nav_studio">
+            Studio Bóc Tách
+          </a>
+          <a href="/library" class="nav-link {% if active_page == 'library' %}active{% endif %}" data-i18n="nav_library">
+            Kho Tài Liệu
+          </a>
+          {% if user.role == 'admin' %}
+          <a href="/admin" class="nav-link {% if active_page == 'admin' %}active{% endif %}" data-i18n="nav_admin">
+            Quản Trị Hệ Thống
+          </a>
+          {% endif %}
+        </nav>
+        {% endif %}
+      </div>
+
+      <div class="header-actions">
+        <!-- Nut chuyen doi Ngon ngu -->
+        <button id="langSwitcherBtn" class="lang-btn" title="Chuyển đổi ngôn ngữ / Switch language">VI</button>
+
+        {% if user %}
+        <!-- User Profile Pill -->
+        <div class="user-profile-pill">
+          <span class="role-tag {% if user.role == 'admin' %}admin{% else %}user{% endif %}">
+            {{ user.role | upper }}
+          </span>
+          <strong>{{ user.username }}</strong>
+        </div>
+
+        <a href="/logout" class="btn btn-outline btn-sm" data-i18n="nav_logout">Đăng Xuất</a>
+        {% else %}
+        <a href="/login" class="btn btn-primary btn-sm" data-i18n="tab_login">Đăng Nhập</a>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+
+  <!-- Khung Noi Dung Chinh -->
+  <main class="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Container Thong Bao Toast -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Footer He Thong -->
+  <footer style="border-top: 1px solid var(--color-border); padding: var(--space-md) var(--space-lg); text-align: center; font-size: 13px; color: var(--color-muted-foreground); background-color: var(--color-card);">
+    <div style="max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <strong>Serverless Hybrid Document OCR & Parsing Platform</strong> | AWS Architecture + Cloudflare Tunnel
+      </div>
+      <div>
+        Bản quyền 2026 | Cloud Journey Vietnam
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts Dung Chung -->
+  <script src="/static/js/i18n.js"></script>
+  <script src="/static/js/api.js"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -216,3 +216,42 @@ def delete_api_key(key_id: str) -> bool:
     affected = cursor.rowcount
     conn.close()
     return affected > 0
+
+# --- Cac ham thong ke va quan ly danh cho Admin ---
+
+def get_all_users() -> List[dict]:
+    """Lay danh sach tat ca nguoi dung trong he thong (khong tra ve password_hash)."""
+    conn = get_db_connection()
+    rows = conn.execute(
+        "SELECT id, username, email, role, created_at FROM users ORDER BY created_at DESC"
+    ).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+def get_admin_system_stats() -> dict:
+    """Tong hop chi so hoat dong toan he thong danh cho Bang Quan Tri Admin."""
+    conn = get_db_connection()
+    total_users = conn.execute("SELECT COUNT(*) as count FROM users").fetchone()["count"]
+    total_docs = conn.execute("SELECT COUNT(*) as count FROM documents").fetchone()["count"]
+    total_keys = conn.execute("SELECT COUNT(*) as count FROM api_keys").fetchone()["count"]
+    active_keys = conn.execute("SELECT COUNT(*) as count FROM api_keys WHERE is_active = 1").fetchone()["count"]
+    total_usage = conn.execute("SELECT COALESCE(SUM(usage_count), 0) as total FROM api_keys").fetchone()["total"]
+    
+    # Lay 5 tai lieu gan nhat toan he thong lam nhat ky xu ly
+    recent_docs = conn.execute(
+        """SELECT d.id, d.filename, d.total_pages, d.model_used, d.processing_time, d.created_at, u.username
+           FROM documents d
+           LEFT JOIN users u ON d.user_id = u.id
+           ORDER BY d.created_at DESC LIMIT 5"""
+    ).fetchall()
+    
+    conn.close()
+    return {
+        "total_users": total_users,
+        "total_documents": total_docs,
+        "total_keys": total_keys,
+        "active_keys": active_keys,
+        "total_key_usage": total_usage,
+        "recent_activity": [dict(r) for r in recent_docs]
+    }
+

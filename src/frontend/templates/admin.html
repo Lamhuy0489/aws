@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block title %}Quản Trị Hệ Thống | Hybrid Document OCR Platform{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title" data-i18n="admin_title">Bảng Điều Khiển Quản Trị Hệ Thống</h1>
+    <p class="page-subtitle" data-i18n="admin_subtitle">
+      Giám sát tài nguyên, điều phối xoay tour API Key và quản lý tài khoản
+    </p>
+  </div>
+  <div>
+    <button type="button" class="btn btn-primary" onclick="openAddKeyModal()" data-i18n="btn_add_key">
+      + Thêm API Key Vào Tour
+    </button>
+  </div>
+</div>
+
+<!-- Hang The KPI Tong Quan -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--space-lg); margin-bottom: var(--space-xl);">
+  <div class="card">
+    <div style="font-size: 12px; font-weight: 600; text-transform: uppercase; color: var(--color-muted-foreground);" data-i18n="kpi_users">
+      Tổng Số Người Dùng
+    </div>
+    <div id="kpiTotalUsers" style="font-size: 32px; font-weight: 700; color: var(--color-foreground); margin-top: 6px;">-</div>
+  </div>
+
+  <div class="card">
+    <div style="font-size: 12px; font-weight: 600; text-transform: uppercase; color: var(--color-muted-foreground);" data-i18n="kpi_docs">
+      Tài Liệu Toàn Hệ Thống
+    </div>
+    <div id="kpiTotalDocs" style="font-size: 32px; font-weight: 700; color: var(--color-foreground); margin-top: 6px;">-</div>
+  </div>
+
+  <div class="card">
+    <div style="font-size: 12px; font-weight: 600; text-transform: uppercase; color: var(--color-muted-foreground);" data-i18n="kpi_keys">
+      API Key Đang Hoạt Động
+    </div>
+    <div id="kpiActiveKeys" style="font-size: 32px; font-weight: 700; color: var(--color-accent); margin-top: 6px;">-</div>
+  </div>
+
+  <div class="card">
+    <div style="font-size: 12px; font-weight: 600; text-transform: uppercase; color: var(--color-muted-foreground);" data-i18n="kpi_usage">
+      Tổng Lượt Gọi Key Tour
+    </div>
+    <div id="kpiKeyUsage" style="font-size: 32px; font-weight: 700; color: var(--color-foreground); margin-top: 6px;">-</div>
+  </div>
+</div>
+
+<!-- Phan He Quan Ly Tour Xoay API Key -->
+<div class="card" style="margin-bottom: var(--space-xl);">
+  <div class="card-header">
+    <h3 class="card-title" data-i18n="sec_key_tour">Quản Lý Tour Xoay API Key (Round-Robin Key Tour)</h3>
+    <button type="button" class="btn btn-outline btn-sm" onclick="loadAdminKeys()">Làm Mới Danh Sách</button>
+  </div>
+
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th data-i18n="th_provider">Nhà Cung Cấp</th>
+          <th data-i18n="th_alias">Tên Gợi Nhớ (Alias)</th>
+          <th data-i18n="th_key_val">Khóa API (Masked)</th>
+          <th data-i18n="th_target_model">Mô Hình Đích</th>
+          <th data-i18n="th_priority">Độ Ưu Tiên</th>
+          <th data-i18n="th_usage_count">Lượt Đã Dùng</th>
+          <th data-i18n="th_status">Trạng Thái</th>
+          <th data-i18n="th_actions">Thao Tác</th>
+        </tr>
+      </thead>
+      <tbody id="adminKeysTableBody">
+        <!-- Danh sach Keys duoc render bang JS -->
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Hang 2 Cot: Nhat Ky Xu Ly & Danh Sach Nguoi Dung -->
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-xl);">
+  <!-- Nhat ky xu ly gan nhat -->
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">Nhật Ký Xử Lý Gần Nhất</h3>
+    </div>
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Tên Tệp</th>
+            <th>Người Dùng</th>
+            <th>Số Trang</th>
+            <th>Mô Hình</th>
+            <th>Thời Gian</th>
+            <th>Thời Điểm</th>
+          </tr>
+        </thead>
+        <tbody id="recentActivityTableBody">
+          <!-- Render bang JS -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Danh sach Nguoi dung -->
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title" data-i18n="sec_users">Danh Sách Tài Khoản Người Dùng</h3>
+    </div>
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th data-i18n="th_user_id">ID</th>
+            <th data-i18n="th_username">Tên Đăng Nhập</th>
+            <th data-i18n="th_email">Email</th>
+            <th data-i18n="th_role">Vai Trò</th>
+            <th data-i18n="th_created_at">Ngày Tạo</th>
+          </tr>
+        </thead>
+        <tbody id="adminUsersTableBody">
+          <!-- Render bang JS -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Them Key Vao Tour -->
+<div id="addKeyModal" class="modal-overlay" style="display: none;">
+  <div class="modal-content">
+    <form id="formAddKey">
+      <div class="modal-header">
+        <h3 class="card-title" data-i18n="modal_add_key_title">Thêm Khóa API Mới Vào Tour Xoay</h3>
+        <button type="button" class="btn btn-outline btn-sm" onclick="closeAddKeyModal()">[X]</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label" for="newKeyProvider" data-i18n="lbl_provider">Nhà cung cấp (Provider)</label>
+          <select id="newKeyProvider" class="form-select">
+            <option value="gemini">Google Gemini Vision</option>
+            <option value="kaggle">Kaggle TPU/GPU (Qwen2.5-VL / Cloudflare Tunnel)</option>
+            <option value="groq">Groq Vision Cloud</option>
+            <option value="openai">OpenAI Compatible</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="newKeyAlias" data-i18n="lbl_key_alias">Tên gợi nhớ (Alias)</label>
+          <input type="text" id="newKeyAlias" class="form-input" placeholder="Ví dụ: Gemini 1.5 Flash - Slot Dự Phòng" required />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="newKeyValue" data-i18n="lbl_key_value">Giá trị API Key / Endpoint URL</label>
+          <input type="text" id="newKeyValue" class="form-input" placeholder="AIzaSy... hoặc https://tunnel-endpoint.trycloudflare.com" required />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="newKeyModel" data-i18n="lbl_target_model">Tên mô hình (Model Name)</label>
+          <input type="text" id="newKeyModel" class="form-input" value="gemini-1.5-flash" required />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="newKeyBaseUrl" data-i18n="lbl_base_url">Base URL (Tùy chọn cho Groq/OpenAI)</label>
+          <input type="text" id="newKeyBaseUrl" class="form-input" placeholder="https://api.groq.com/openai/v1" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="newKeyPriority" data-i18n="lbl_priority">Độ ưu tiên (1 = Cao nhất)</label>
+          <input type="number" id="newKeyPriority" class="form-input" value="1" min="1" max="10" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-primary" data-i18n="btn_save">Lưu Khóa API</button>
+        <button type="button" class="btn btn-outline" onclick="closeAddKeyModal()" data-i18n="btn_cancel">Hủy</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/admin.js"></script>
+{% endblock %}

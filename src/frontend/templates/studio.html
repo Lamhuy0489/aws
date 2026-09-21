@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}Studio Bóc Tách | Hybrid Document OCR Platform{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title" data-i18n="studio_title">Studio Bóc Tách Tài Liệu</h1>
+    <p class="page-subtitle" data-i18n="studio_subtitle">
+      Bóc tách văn bản số, bảng biểu phân cấp và công thức toán từ PDF/Ảnh
+    </p>
+  </div>
+</div>
+
+<div class="studio-grid">
+  <!-- Cot Trai: Cau Hinh & Tai Tep Len -->
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">Cấu Hình Bóc Tách</h3>
+    </div>
+
+    <!-- Dropzone tai tep -->
+    <div class="dropzone" id="studioDropzone">
+      <input type="file" id="studioFileInput" accept=".pdf,.png,.jpg,.jpeg" style="display: none;" />
+      <div class="dropzone-title" data-i18n="dropzone_title">Kéo thả tệp PDF hoặc Ảnh tại đây</div>
+      <div class="dropzone-desc" data-i18n="dropzone_desc">Hỗ trợ tệp PDF, PNG, JPG (Tối đa 50MB)</div>
+    </div>
+
+    <!-- Thong tin tep da chon -->
+    <div id="selectedFileInfo" style="display: none; margin-top: var(--space-md); padding: 10px; background-color: var(--color-muted); border: 1px solid var(--color-border); border-radius: var(--radius-md);">
+      <div style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: var(--color-muted-foreground);">Tệp đã chọn:</div>
+      <div id="selectedFileName" style="font-size: 13px; font-weight: 600; color: var(--color-accent); word-break: break-all; margin-top: 2px;"></div>
+    </div>
+
+    <!-- Nut Nap Tai Lieu Mau -->
+    <div style="margin-top: var(--space-md);">
+      <div style="font-size: 12px; font-weight: 600; color: var(--color-muted-foreground); margin-bottom: 6px;">Hoặc thử nghiệm nhanh với tệp mẫu:</div>
+      <div style="display: flex; gap: 6px;">
+        <button type="button" class="btn btn-outline btn-sm" style="flex: 1;" onclick="loadSampleDoc('invoice')">
+          Hóa Đơn Mẫu
+        </button>
+        <button type="button" class="btn btn-outline btn-sm" style="flex: 1;" onclick="loadSampleDoc('contract')">
+          Hợp Đồng Mẫu
+        </button>
+      </div>
+    </div>
+
+    <hr style="border: none; border-top: 1px solid var(--color-border-subtle); margin: var(--space-md) 0;" />
+
+    <!-- Bo chon Mo hinh -->
+    <div class="form-group">
+      <label class="form-label" for="modelSelect" data-i18n="lbl_model_select">Bộ chọn Mô hình OCR / AI</label>
+      <select id="modelSelect" class="form-select">
+        <option value="auto" data-i18n="opt_model_auto">Tự động (Fast-Path Native + Fallback)</option>
+        <option value="kaggle" data-i18n="opt_model_kaggle">Kaggle TPU/GPU (Qwen2.5-VL)</option>
+        <option value="gemini-flash" data-i18n="opt_model_gemini_flash">Google Gemini 1.5 Flash Vision</option>
+        <option value="gemini-pro" data-i18n="opt_model_gemini_pro">Google Gemini 1.5 Pro Vision</option>
+        <option value="groq" data-i18n="opt_model_groq">Groq LLaMA 3.2 Vision</option>
+        <option value="mock" data-i18n="opt_model_mock">Mô phỏng Cục bộ (Local Mock)</option>
+      </select>
+    </div>
+
+    <!-- Bo chon Ngon ngu -->
+    <div class="form-group">
+      <label class="form-label" for="langSelect" data-i18n="lbl_language">Ngôn ngữ tài liệu</label>
+      <select id="langSelect" class="form-select">
+        <option value="vi" data-i18n="opt_lang_vi">Tiếng Việt (Có dấu chuẩn)</option>
+        <option value="en" data-i18n="opt_lang_en">Tiếng Anh (English)</option>
+        <option value="multi" data-i18n="opt_lang_multi">Đa ngôn ngữ kết hợp</option>
+      </select>
+    </div>
+
+    <!-- Tuy chon Fast-Path -->
+    <div class="form-group" style="display: flex; align-items: center; gap: 8px;">
+      <input type="checkbox" id="fastPathToggle" checked style="width: 16px; height: 16px; cursor: pointer;" />
+      <label for="fastPathToggle" style="font-size: 13px; cursor: pointer;" data-i18n="lbl_fast_path">
+        Kích hoạt Fast-Path Vector bóc tách siêu tốc
+      </label>
+    </div>
+
+    <!-- Nut Xu ly -->
+    <button type="button" id="processBtn" class="btn btn-primary" style="width: 100%; margin-top: var(--space-sm);" disabled data-i18n="btn_process">
+      Bắt Đầu Bóc Tách Tài Liệu
+    </button>
+  </div>
+
+  <!-- Cot Phai: Khung Xem Truoc Kep Dual-Pane -->
+  <div>
+    <div id="resultViewer" class="viewer-container" style="display: none;">
+      <!-- Khung Anh Goc Scan -->
+      <div class="viewer-pane">
+        <div class="pane-header">
+          <div>
+            <span data-i18n="pane_original">Bản Quét Gốc (Trang</span> <span id="pageIndicator">1 / 1</span>)
+          </div>
+          <div style="display: flex; gap: 4px;">
+            <button type="button" id="prevPageBtn" class="btn btn-outline btn-sm" onclick="prevPage()">Trang Trước</button>
+            <button type="button" id="nextPageBtn" class="btn btn-outline btn-sm" onclick="nextPage()">Trang Sau</button>
+          </div>
+        </div>
+        <div class="pane-body" id="pageImageContainer" style="background-color: #475569; display: flex; justify-content: center; align-items: flex-start; padding: 20px;">
+          <!-- Anh trang tai lieu se duoc chen tai day -->
+        </div>
+      </div>
+
+      <!-- Khung Trang Giay A4 Mo Phong -->
+      <div class="viewer-pane">
+        <div class="pane-header">
+          <div data-i18n="pane_markdown">Bản Xem Trước A4 & Bố Cục Markdown</div>
+          <div style="display: flex; gap: 6px;">
+            <button type="button" class="btn btn-primary btn-sm" onclick="downloadDocx()" data-i18n="btn_download_docx">Tải Word (.docx)</button>
+            <button type="button" class="btn btn-outline btn-sm" onclick="downloadMarkdown()" data-i18n="btn_download_md">Tải Markdown</button>
+            <button type="button" class="btn btn-outline btn-sm" onclick="copyText()">Sao Chép</button>
+          </div>
+        </div>
+
+        <!-- Chi so thong ke xu ly -->
+        <div style="padding: 8px 14px; background-color: #F8FAFC; border-bottom: 1px solid var(--color-border); font-size: 12px; display: flex; gap: 16px;">
+          <div>Số trang: <strong id="statPages">-</strong></div>
+          <div>Thời gian xử lý: <strong id="statTime">-</strong></div>
+        </div>
+
+        <div class="pane-body">
+          <div id="docSheetContent" class="doc-sheet">
+            <!-- Noi dung bóc tách render chuan A4 -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Khung Huong Dan Khi Chua Co Ket Qua -->
+    <div id="emptyStudioGuide" class="card" style="text-align: center; padding: 60px 20px;">
+      <h3 style="font-size: 16px; font-weight: 600; color: var(--color-foreground);">Chưa Có Tài Liệu Được Xử Lý</h3>
+      <p style="font-size: 14px; color: var(--color-muted-foreground); max-width: 480px; margin: 8px auto 20px;">
+        Vui lòng chọn tệp PDF hoặc ảnh từ máy tính của bạn, hoặc bấm "Hóa Đơn Mẫu" / "Hợp Đồng Mẫu" bên trái để trải nghiệm tốc độ bóc tách của hệ thống.
+      </p>
+      <div style="display: inline-flex; gap: 10px;">
+        <button type="button" class="btn btn-primary" onclick="loadSampleDoc('invoice')">Thử Với Hóa Đơn Mẫu</button>
+        <button type="button" class="btn btn-outline" onclick="loadSampleDoc('contract')">Thử Với Hợp Đồng Mẫu</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/studio.js"></script>
+{% endblock %}

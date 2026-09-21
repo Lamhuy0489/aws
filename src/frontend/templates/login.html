@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Đăng Nhập | Hybrid Document OCR Platform{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+  <div class="auth-card">
+    <div style="text-align: center; margin-bottom: var(--space-xl);">
+      <h1 style="font-size: 20px; font-weight: 700; color: var(--color-foreground);" data-i18n="auth_title">
+        Cổng Đăng Nhập Doanh Nghiệp
+      </h1>
+      <p style="font-size: 13px; color: var(--color-muted-foreground); margin-top: 4px;" data-i18n="auth_desc">
+        Nền tảng OCR & Bóc tách tài liệu hybrid bảo toàn 100% cấu trúc
+      </p>
+    </div>
+
+    <!-- Tab Chuyen Doi Dang Nhap / Dang Ky -->
+    <div class="auth-tabs">
+      <button type="button" id="tabLogin" class="auth-tab-btn active" data-i18n="tab_login">
+        Đăng Nhập
+      </button>
+      <button type="button" id="tabRegister" class="auth-tab-btn" data-i18n="tab_register">
+        Đăng Ký
+      </button>
+    </div>
+
+    <!-- Form Dang Nhap -->
+    <form id="formLogin">
+      <div class="form-group">
+        <label class="form-label" for="loginUsername" data-i18n="lbl_username">Tên đăng nhập</label>
+        <input type="text" id="loginUsername" class="form-input" placeholder="Nhập tên đăng nhập" required autocomplete="username" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="loginPassword" data-i18n="lbl_password">Mật khẩu</label>
+        <input type="password" id="loginPassword" class="form-input" placeholder="Nhập mật khẩu" required autocomplete="current-password" />
+      </div>
+
+      <button type="submit" id="loginSubmitBtn" class="btn btn-primary" style="width: 100%; margin-top: var(--space-sm);" data-i18n="btn_login">
+        Đăng Nhập Hệ Thống
+      </button>
+    </form>
+
+    <!-- Form Dang Ky -->
+    <form id="formRegister" style="display: none;">
+      <div class="form-group">
+        <label class="form-label" for="regUsername" data-i18n="lbl_username">Tên đăng nhập</label>
+        <input type="text" id="regUsername" class="form-input" placeholder="Ví dụ: nguyenvanan" required autocomplete="username" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="regEmail" data-i18n="lbl_email">Địa chỉ email</label>
+        <input type="email" id="regEmail" class="form-input" placeholder="an.nguyen@cloudjourney.vn" autocomplete="email" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="regPassword" data-i18n="lbl_password">Mật khẩu</label>
+        <input type="password" id="regPassword" class="form-input" placeholder="Tối thiểu 6 ký tự" required autocomplete="new-password" />
+      </div>
+
+      <button type="submit" id="regSubmitBtn" class="btn btn-primary" style="width: 100%; margin-top: var(--space-sm);" data-i18n="btn_register">
+        Tạo Tài Khoản Mới
+      </button>
+    </form>
+
+    <!-- Hop Goi Y Tai Khoan Mau -->
+    <div class="demo-account-box">
+      <h4 data-i18n="demo_hint_title">Tài Khoản Mẫu Để Đánh Giá:</h4>
+      <div style="margin-top: 6px; display: flex; flex-direction: column; gap: 6px;">
+        <button type="button" id="fillAdminBtn" class="btn btn-outline btn-sm" style="text-align: left; justify-content: flex-start; font-size: 11px;">
+          <strong>Admin:</strong> admin / Admin@123 &nbsp;<span style="color: var(--color-muted-foreground);">(Tự chuyển hướng sang /admin)</span>
+        </button>
+        <button type="button" id="fillDemoBtn" class="btn btn-outline btn-sm" style="text-align: left; justify-content: flex-start; font-size: 11px;">
+          <strong>User:</strong> demo / Demo@123 &nbsp;<span style="color: var(--color-muted-foreground);">(Tự chuyển hướng sang /studio)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/auth.js"></script>
+{% endblock %}

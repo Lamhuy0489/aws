@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Kho Tài Liệu | Hybrid Document OCR Platform{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title" data-i18n="lib_title">Kho Lưu Trữ Tài Liệu Cá Nhân</h1>
+    <p class="page-subtitle" data-i18n="lib_subtitle">
+      Toàn bộ tài liệu được bảo mật và cô lập tuyệt đối theo tài khoản của bạn
+    </p>
+  </div>
+  <div>
+    <a href="/studio" class="btn btn-primary">+ Bóc Tách Tài Liệu Mới</a>
+  </div>
+</div>
+
+<div class="card">
+  <!-- Thanh Cong Cu & Tim Kiem -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-md); gap: var(--space-md);">
+    <div style="flex: 1; max-width: 400px;">
+      <input type="text" id="librarySearchInput" class="form-input" placeholder="Tìm kiếm tài liệu theo tên..." data-i18n-placeholder="search_placeholder" />
+    </div>
+    <div>
+      <span id="docCountBadge" class="badge badge-muted">0 tài liệu</span>
+    </div>
+  </div>
+
+  <!-- Bang Danh Sach Tai Lieu -->
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th data-i18n="th_filename">Tên Tài Liệu</th>
+          <th data-i18n="th_pages">Số Trang (Số/Scan)</th>
+          <th data-i18n="th_model">Mô Hình</th>
+          <th data-i18n="th_time">Thời Gian Xử Lý</th>
+          <th data-i18n="th_date">Ngày Lưu</th>
+          <th data-i18n="th_actions">Thao Tác</th>
+        </tr>
+      </thead>
+      <tbody id="libraryTableBody">
+        <!-- Hang tai lieu duoc render bang JS -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Empty State -->
+  <div id="libraryEmptyState" style="display: none; padding: 60px 20px; text-align: center;">
+    <h3 style="font-size: 16px; font-weight: 600; color: var(--color-foreground);">Chưa Có Tài Liệu Nào</h3>
+    <p style="font-size: 14px; color: var(--color-muted-foreground); max-width: 440px; margin: 8px auto 20px;" data-i18n="empty_lib">
+      Chưa có tài liệu nào trong kho lưu trữ của bạn. Hãy tải tài liệu mới từ Studio.
+    </p>
+    <a href="/studio" class="btn btn-primary">Đi Tới OCR Studio</a>
+  </div>
+</div>
+
+<!-- Modal Xem Lai Ban A4 Chi Tiet -->
+<div id="docPreviewModal" class="modal-overlay" style="display: none;">
+  <div class="modal-content" style="max-width: 900px;">
+    <div class="modal-header">
+      <h3 class="card-title" id="modalDocTitle">Chi Tiết Tài Liệu</h3>
+      <button type="button" class="btn btn-outline btn-sm" onclick="closeDocModal()">[X] Đóng</button>
+    </div>
+    <div class="modal-body" style="background-color: #E2E8F0; padding: var(--space-lg);">
+      <div id="modalDocSheet" class="doc-sheet">
+        <!-- Noi dung bóc tách render chuan A4 -->
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-primary" onclick="downloadModalDocx()">Tải Về Word (.docx)</button>
+      <button type="button" class="btn btn-outline" onclick="downloadModalMarkdown()">Tải Về Markdown</button>
+      <button type="button" class="btn btn-outline" onclick="closeDocModal()">Đóng</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/library.js"></script>
+{% endblock %}

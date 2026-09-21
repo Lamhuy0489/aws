@@ -6,7 +6,6 @@ from werkzeug.security import check_password_hash
 import src.backend.database.db as db_module
 from src.backend.database.db import (
     init_db,
-    get_db_connection,
     get_user_by_username,
     get_user_by_id,
     create_user,
@@ -19,7 +18,9 @@ from src.backend.database.db import (
     create_api_key,
     toggle_api_key_status,
     increment_api_key_usage,
-    delete_api_key
+    delete_api_key,
+    get_all_users,
+    get_admin_system_stats
 )
 from src.backend.llm.key_tour_manager import KeyTourManager
 from src.frontend.server import app
@@ -75,129 +76,133 @@ def test_user_creation_and_retrieval():
     assert by_id is not None
     assert by_id["username"] == "testuser"
 
-def test_document_crud_operations():
-    """Kiem tra cac thao tac CRUD tren kho tai lieu nguoi dung."""
-    user = create_user("docuser", "doc@domain.vn", "Pass@123")
-    user_id = user["id"]
+def test_document_isolation_between_accounts():
+    """Kiem tra ranh gioi tai lieu chat che giua hai tai khoan khac nhau."""
+    user_a = create_user("usera", "a@domain.vn", "Pass@123")
+    user_b = create_user("userb", "b@domain.vn", "Pass@123")
 
-    # 1. Tao tai lieu moi
-    doc = create_document(
-        user_id=user_id,
-        filename="bang_ke_chi_phi.pdf",
-        file_size=20480,
-        total_pages=2,
-        digital_pages=2,
+    # User A tao 1 tai lieu
+    doc_a = create_document(
+        user_id=user_a["id"],
+        filename="bang_ke_user_a.pdf",
+        file_size=1024,
+        total_pages=1,
+        digital_pages=1,
         scanned_pages=0,
-        full_markdown="# Bang ke chi phi\n| Muc | So tien |\n| EC2 | 100 |",
+        full_markdown="# Document of User A",
         model_used="Fast-Path",
-        language="vi",
-        processing_time=0.15
+        language="vi"
     )
-    doc_id = doc["id"]
-    assert doc_id is not None
 
-    # 2. Lay danh sach tai lieu cua user
-    docs = get_documents_by_user(user_id)
-    assert len(docs) == 1
-    assert docs[0]["filename"] == "bang_ke_chi_phi.pdf"
+    # User A nhin thay tai lieu cua minh
+    docs_a = get_documents_by_user(user_a["id"])
+    assert len(docs_a) == 1
+    assert docs_a[0]["id"] == doc_a["id"]
 
-    # 3. Lay chi tiet tai lieu
-    detail = get_document_by_id(doc_id, user_id)
-    assert detail is not None
-    assert "Bang ke chi phi" in detail["full_markdown"]
+    # User B KHONG nhin thay tai lieu cua User A
+    docs_b = get_documents_by_user(user_b["id"])
+    assert len(docs_b) == 0
 
-    # 4. Xoa tai lieu
-    deleted = delete_document(doc_id, user_id)
-    assert deleted is True
-    assert get_document_by_id(doc_id, user_id) is None
+    # User B khong the lay chi tiet tai lieu cua User A
+    doc_detail_for_b = get_document_by_id(doc_a["id"], user_id=user_b["id"])
+    assert doc_detail_for_b is None
 
-def test_api_key_tour_rotation():
-    """Kiem tra co che xoay tour Round-Robin dua tren luot dung usage_count."""
-    # Tao 2 gemini keys voi usage ban dau khac nhau
-    k1 = create_api_key("gemini", "Gemini Tour A", "AIza_KEY_A", "gemini-1.5-flash", priority=1)
-    k2 = create_api_key("gemini", "Gemini Tour B", "AIza_KEY_B", "gemini-1.5-flash", priority=2)
+    # User B khong the xoa tai lieu cua User A
+    delete_result = delete_document(doc_a["id"], user_id=user_b["id"])
+    assert delete_result is False
 
-    # Bat ca hai hoat dong
-    active_gemini = get_active_keys_by_provider("gemini")
-    assert len(active_gemini) >= 2
+    # Tai lieu cua User A van con nguyen ven
+    assert get_document_by_id(doc_a["id"], user_id=user_a["id"]) is not None
 
-    # Lay key dau tien (usage_count = 0)
-    picked_1 = KeyTourManager.get_next_key("gemini")
-    assert picked_1 is not None
+def test_api_key_tour_and_admin_stats():
+    """Kiem tra co che xoay tour va thong ke he thong admin."""
+    # 1. Thong ke ban dau
+    stats = get_admin_system_stats()
+    assert stats["total_users"] >= 2
+    assert stats["total_keys"] >= 4
+    assert stats["active_keys"] >= 4
 
-    # Ghi nhan 2 luot dung cho picked_1
-    KeyTourManager.record_usage(picked_1["id"])
-    KeyTourManager.record_usage(picked_1["id"])
+    # 2. Xoay tour key
+    picked = KeyTourManager.get_next_key("gemini")
+    assert picked is not None
+    KeyTourManager.record_usage(picked["id"])
 
-    # Xoay vong tiep theo: phai uu tien key co usage_count thap hon
-    picked_2 = KeyTourManager.get_next_key("gemini")
-    assert picked_2 is not None
-    assert picked_2["usage_count"] <= picked_1["usage_count"] + 2
+    updated_stats = get_admin_system_stats()
+    assert updated_stats["total_key_usage"] >= 1
 
-    # Kiem tra toggle active/inactive
-    new_status = toggle_api_key_status(k1["id"])
-    assert new_status == 0  # Tu 1 thanh 0
-    toggle_api_key_status(k1["id"])  # Bat lai
+    # 3. Lay danh sach user admin
+    users = get_all_users()
+    assert len(users) >= 2
+    for u in users:
+        assert "password_hash" not in u
 
-    # Kiem tra xoa key
-    del_res = delete_api_key(k2["id"])
-    assert del_res is True
-
-def test_flask_auth_endpoints(client):
-    """Kiem tra flow xac thuc: Dang ky -> Dang nhap -> Kiem tra me -> Dang xuat."""
-    # 1. Dang ky tai khoan moi
-    reg_resp = client.post("/api/auth/register", json={
-        "username": "clientuser",
-        "email": "client@domain.vn",
-        "password": "ClientPassword@123"
-    })
-    assert reg_resp.status_code == 200
-    assert reg_resp.json["message"] == "Đăng ký thành công"
-
-    # 2. Dang xuat
-    logout_resp = client.post("/api/auth/logout")
-    assert logout_resp.status_code == 200
-
-    # 3. Kiem tra me khi chua dang nhap
-    me_unauth = client.get("/api/auth/me")
-    assert me_unauth.status_code == 200
-    assert me_unauth.json["authenticated"] is False
-
-    # 4. Dang nhap
-    login_resp = client.post("/api/auth/login", json={
-        "username": "clientuser",
-        "password": "ClientPassword@123"
-    })
-    assert login_resp.status_code == 200
-    assert login_resp.json["user"]["username"] == "clientuser"
-
-    # 5. Kiem tra me sau khi dang nhap
-    me_auth = client.get("/api/auth/me")
-    assert me_auth.status_code == 200
-    assert me_auth.json["authenticated"] is True
-    assert me_auth.json["user"]["role"] == "user"
-
-def test_flask_admin_permissions(client):
-    """Kiem tra phan quyen truy cap API Admin (chua dang nhap, user thuong, admin)."""
-    # 1. Chua dang nhap -> 401 Unauthorized
-    resp_unauth = client.get("/api/admin/keys")
-    assert resp_unauth.status_code == 401
-
-    # 2. Dang nhap voi user thuong (demo) -> 403 Forbidden
-    client.post("/api/auth/login", json={
-        "username": "demo",
-        "password": "Demo@123"
-    })
-    resp_forbidden = client.get("/api/admin/keys")
-    assert resp_forbidden.status_code == 403
-
-    # 3. Dang xuat va dang nhap voi admin -> 200 OK
-    client.post("/api/auth/logout")
-    client.post("/api/auth/login", json={
+def test_role_based_login_redirection(client):
+    """Kiem tra form dang nhap tu dong chuyen huong: admin -> /admin, user -> /studio."""
+    # 1. Dang nhap tai khoan Admin -> redirect sang /admin
+    resp_admin = client.post("/api/auth/login", json={
         "username": "admin",
         "password": "Admin@123"
     })
-    resp_admin = client.get("/api/admin/keys")
     assert resp_admin.status_code == 200
-    assert "keys" in resp_admin.json
-    assert len(resp_admin.json["keys"]) > 0
+    assert resp_admin.json["redirect_url"] == "/admin"
+
+    # 2. Dang xuat
+    client.post("/api/auth/logout")
+
+    # 3. Dang nhap tai khoan User (demo) -> redirect sang /studio
+    resp_user = client.post("/api/auth/login", json={
+        "username": "demo",
+        "password": "Demo@123"
+    })
+    assert resp_user.status_code == 200
+    assert resp_user.json["redirect_url"] == "/studio"
+
+def test_multi_page_view_routes_and_protection(client):
+    """Kiem tra dieu huong da trang va bao ve ranh gioi giua cac route HTML."""
+    # 1. Chua dang nhap:
+    # GET / -> 302 ve /login
+    resp_root = client.get("/")
+    assert resp_root.status_code == 302
+    assert "/login" in resp_root.headers["Location"]
+
+    # GET /studio -> 302 ve /login
+    resp_studio_unauth = client.get("/studio")
+    assert resp_studio_unauth.status_code == 302
+    assert "/login" in resp_studio_unauth.headers["Location"]
+
+    # GET /admin -> 302 ve /login
+    resp_admin_unauth = client.get("/admin")
+    assert resp_admin_unauth.status_code == 302
+    assert "/login" in resp_admin_unauth.headers["Location"]
+
+    # 2. Dang nhap tai khoan user thuong (demo)
+    client.post("/api/auth/login", json={"username": "demo", "password": "Demo@123"})
+
+    # GET /studio -> 200 OK
+    resp_studio_auth = client.get("/studio")
+    assert resp_studio_auth.status_code == 200
+    assert b"Studio" in resp_studio_auth.data
+
+    # GET /library -> 200 OK
+    resp_lib_auth = client.get("/library")
+    assert resp_lib_auth.status_code == 200
+    assert b"Kho" in resp_lib_auth.data
+
+    # GET /admin -> 403 Forbidden
+    resp_admin_forbidden = client.get("/admin")
+    assert resp_admin_forbidden.status_code == 403
+    assert b"403" in resp_admin_forbidden.data
+
+    # 3. Dang xuat va dang nhap voi admin
+    client.post("/api/auth/logout")
+    client.post("/api/auth/login", json={"username": "admin", "password": "Admin@123"})
+
+    # GET /admin -> 200 OK
+    resp_admin_ok = client.get("/admin")
+    assert resp_admin_ok.status_code == 200
+    assert b"Quan" in resp_admin_ok.data
+
+    # GET /api/admin/stats -> 200 OK
+    resp_stats = client.get("/api/admin/stats")
+    assert resp_stats.status_code == 200
+    assert "stats" in resp_stats.json

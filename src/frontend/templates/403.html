@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}403 - Quyền Truy Cập Bị Từ Chối | Hybrid Document OCR Platform{% endblock %}
+
+{% block content %}
+<div class="error-page-wrapper">
+  <div class="error-code">403</div>
+  <h2 style="font-size: 20px; font-weight: 700; color: var(--color-foreground); margin-bottom: 8px;">
+    Quyền Truy Cập Bị Từ Chối (Access Forbidden)
+  </h2>
+  <p style="font-size: 14px; color: var(--color-muted-foreground); margin-bottom: var(--space-xl);">
+    Tài khoản của bạn (<strong>{{ user.username if user else 'Khách' }}</strong>) không có đặc quyền Quản trị viên (Admin) để truy cập vào khu vực này. Hệ thống áp dụng chính sách phân định ranh giới tài khoản nghiêm ngặt nhằm đảm bảo an toàn dữ liệu.
+  </p>
+  <div style="display: flex; justify-content: center; gap: 10px;">
+    <a href="/studio" class="btn btn-primary">Quay Về OCR Studio</a>
+    <a href="/logout" class="btn btn-outline">Đăng Xuất</a>
+  </div>
+</div>
+{% endblock %}
