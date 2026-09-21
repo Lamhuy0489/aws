@@ -44,6 +44,7 @@ def api_process():
     # Xac dinh che do bóc tách dua tren lua chon mo hinh
     mode = "STANDALONE"
     gemini_key = ""
+    gemini_model = "gemini-3.6-flash"
     kaggle_url = ""
     active_key_id = None
 
@@ -53,11 +54,12 @@ def api_process():
         if picked:
             kaggle_url = picked["key_value"]
             active_key_id = picked["id"]
-    elif model_choice in ["gemini-flash", "gemini-pro"]:
+    elif model_choice in ["gemini-flash", "gemini-pro", "gemini-3.6-flash"]:
         mode = "STANDALONE"
         picked = KeyTourManager.get_next_key("gemini")
         if picked:
             gemini_key = picked["key_value"]
+            gemini_model = picked.get("model_name") or "gemini-3.6-flash"
             active_key_id = picked["id"]
     elif model_choice == "groq":
         mode = "STANDALONE"
@@ -71,13 +73,15 @@ def api_process():
         picked = KeyTourManager.get_next_key("gemini")
         if picked:
             gemini_key = picked["key_value"]
+            gemini_model = picked.get("model_name") or "gemini-3.6-flash"
             active_key_id = picked["id"]
 
     settings = AppSettings(
         ocr_mode=mode,
         fast_path_enabled=fast_path,
         kaggle_endpoint=kaggle_url,
-        gemini_api_key=gemini_key
+        gemini_api_key=gemini_key,
+        gemini_model=gemini_model
     )
 
     engine = HybridDocumentEngine(settings=settings)
