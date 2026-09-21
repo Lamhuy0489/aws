@@ -3,26 +3,37 @@ import sys
 import io
 import uuid
 import logging
+from flask import Flask, request, jsonify, render_template, send_file, session
+from werkzeug.security import check_password_hash
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-from flask import Flask, request, jsonify, render_template, send_file
 from src.backend.config.settings import AppSettings
 from src.backend.parsers.hybrid_engine import HybridDocumentEngine, DocumentResult
 from src.backend.exporters.docx_exporter import DocxExporter
+from src.backend.database.db import (
+    init_db, get_user_by_username, get_user_by_id, create_user,
+    create_document, get_documents_by_user, get_document_by_id, delete_document,
+    get_all_api_keys, create_api_key, toggle_api_key_status, delete_api_key
+)
+from src.backend.auth.security import get_current_user, login_required, admin_required
+from src.backend.llm.key_tour_manager import KeyTourManager
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__, template_folder="templates")
+app.secret_key = os.getenv("SECRET_KEY", "hybrid-ocr-enterprise-secret-key-2026")
 
 SAMPLE_DIR = os.path.join(PROJECT_ROOT, "data", "sample_documents")
 os.makedirs(SAMPLE_DIR, exist_ok=True)
 
+# Khởi tạo CSDL khi khởi động ứng dụng
+init_db()
+
 def _get_system_font_path():
-    """Tìm font hệ thống có hỗ trợ đầy đủ tiếng Việt."""
     candidates = [
         "/System/Library/Fonts/Helvetica.ttc",
         "/System/Library/Fonts/Supplemental/Arial.ttf",
@@ -35,39 +46,31 @@ def _get_system_font_path():
     return None
 
 def generate_sample_pdfs():
-    """Tạo tệp PDF mẫu chất lượng cao với bảng biểu thực tế và font tiếng Việt chuẩn."""
+    """Tạo tệp PDF mẫu nếu chưa có."""
     import fitz
-
     font_path = _get_system_font_path()
     invoice_path = os.path.join(SAMPLE_DIR, "sample_invoice.pdf")
 
-    # Luôn tái tạo để đảm bảo cấu hình bảng biểu và font mới nhất
     doc = fitz.open()
-
-    # Trang 1: PDF số có tiêu đề, thông tin và bảng chi phí AWS
     page1 = doc.new_page(width=595, height=842)
     font_alias = "helv"
     if font_path:
         page1.insert_font(fontname="f_vn", fontfile=font_path)
         font_alias = "f_vn"
 
-    # Tiêu đề công ty và hóa đơn
     page1.insert_text((50, 45), "CÔNG TY CỔ PHẦN CÔNG NGHỆ ĐÁM MÂY CLOUD JOURNEY", fontname=font_alias, fontsize=12)
     page1.insert_text((50, 65), "Địa chỉ: Tầng 10, Tòa nhà Công nghệ, Hà Nội | MST: 0109988776", fontname=font_alias, fontsize=9)
     page1.insert_text((50, 95), "HÓA ĐƠN DỊCH VỤ ĐIỆN TOÁN ĐÁM MÂY (AWS BILLING INVOICE)", fontname=font_alias, fontsize=14)
     page1.insert_text((50, 115), "Số hóa đơn: INV-2026-09-001 | Ngày lập: 21/09/2026", fontname=font_alias, fontsize=10)
     page1.insert_text((50, 130), "Khách hàng: Công ty Cổ phần Giải pháp Doanh nghiệp Việt Nam", fontname=font_alias, fontsize=10)
 
-    # Kẻ lưới bảng chi phí dịch vụ (Table Grid)
+    # Kẻ lưới bảng chi phí
     shape = page1.new_shape()
-    # Khung bao ngoài bảng (y: 150 đến 280)
     shape.draw_rect(fitz.Rect(50, 150, 545, 280))
-    # Đường kẻ ngang
-    shape.draw_line((50, 175), (545, 175))  # Dưới tiêu đề cột
-    shape.draw_line((50, 205), (545, 205))  # Dòng 1
-    shape.draw_line((50, 235), (545, 235))  # Dòng 2
-    shape.draw_line((50, 260), (545, 260))  # Dòng 3
-    # Đường kẻ dọc các cột: STT (50-80), Tên dịch vụ (80-260), Số lượng (260-360), Đơn giá (360-440), Thành tiền (440-545)
+    shape.draw_line((50, 175), (545, 175))
+    shape.draw_line((50, 205), (545, 205))
+    shape.draw_line((50, 235), (545, 235))
+    shape.draw_line((50, 260), (545, 260))
     shape.draw_line((80, 150), (80, 280))
     shape.draw_line((260, 150), (260, 280))
     shape.draw_line((360, 150), (360, 280))
@@ -75,14 +78,12 @@ def generate_sample_pdfs():
     shape.finish(color=(0.2, 0.2, 0.2), width=1)
     shape.commit()
 
-    # Dòng tiêu đề bảng
     page1.insert_text((55, 168), "STT", fontname=font_alias, fontsize=9)
     page1.insert_text((85, 168), "Tên Dịch Vụ AWS", fontname=font_alias, fontsize=9)
     page1.insert_text((265, 168), "Số Lượng", fontname=font_alias, fontsize=9)
     page1.insert_text((365, 168), "Đơn Giá (VNĐ)", fontname=font_alias, fontsize=9)
     page1.insert_text((445, 168), "Thành Tiền (VNĐ)", fontname=font_alias, fontsize=9)
 
-    # Dữ liệu các hàng
     page1.insert_text((60, 195), "1", fontname=font_alias, fontsize=9)
     page1.insert_text((85, 195), "Amazon EC2 t3.medium", fontname=font_alias, fontsize=9)
     page1.insert_text((265, 195), "2 instances", fontname=font_alias, fontsize=9)
@@ -107,14 +108,13 @@ def generate_sample_pdfs():
     page1.insert_text((365, 273), "1.00", fontname=font_alias, fontsize=9)
     page1.insert_text((445, 273), "1,500,000", fontname=font_alias, fontsize=9)
 
-    # Khối tổng thanh toán
     page1.insert_text((50, 310), "Tổng thanh toán trước thuế: 3,550,000 VNĐ", fontname=font_alias, fontsize=10)
     page1.insert_text((50, 330), "Thuế giá trị gia tăng (VAT 10%): 355,000 VNĐ", fontname=font_alias, fontsize=10)
     page1.insert_text((50, 350), "Tổng cộng tiền thanh toán: 3,905,000 VNĐ", fontname=font_alias, fontsize=11)
     page1.insert_text((50, 380), "Ghi chú: Dịch vụ tuân thủ các chuẩn Well-Architected về độ tin cậy và bảo mật.", fontname=font_alias, fontsize=9)
     page1.insert_text((50, 420), "Người lập biểu: Nguyễn Văn A | Kế toán trưởng: Trần Thị B", fontname=font_alias, fontsize=10)
 
-    # Trang 2: Giả lập trang ảnh scan không có text layer (kích hoạt Tầng 2 OCR)
+    # Trang 2: Giả lập scan
     page2 = doc.new_page(width=595, height=842)
     s2 = page2.new_shape()
     s2.draw_rect(fitz.Rect(40, 40, 555, 800))
@@ -123,9 +123,8 @@ def generate_sample_pdfs():
 
     doc.save(invoice_path)
     doc.close()
-    logger.info(f"Đã tạo tệp mẫu hóa đơn chuẩn: {invoice_path}")
 
-    # Tệp mẫu 2: Hợp đồng kinh tế phân cấp
+    # Tệp mẫu 2: Hợp đồng
     contract_path = os.path.join(SAMPLE_DIR, "sample_contract.pdf")
     doc2 = fitz.open()
     c_page = doc2.new_page(width=595, height=842)
@@ -155,7 +154,6 @@ def generate_sample_pdfs():
     )
     c_page.insert_text((50, 170), c_text, fontname=c_alias, fontsize=10)
 
-    # Kẻ khung chữ ký 2 cột
     c_shape = c_page.new_shape()
     c_shape.draw_rect(fitz.Rect(50, 550, 545, 670))
     c_shape.draw_line((297, 550), (297, 670))
@@ -170,10 +168,10 @@ def generate_sample_pdfs():
 
     doc2.save(contract_path)
     doc2.close()
-    logger.info(f"Đã tạo tệp mẫu hợp đồng chuẩn: {contract_path}")
 
-# Khởi tạo tệp mẫu
 generate_sample_pdfs()
+
+# --- Định tuyến Giao diện & Tệp mẫu ---
 
 @app.route("/")
 def index():
@@ -186,6 +184,150 @@ def get_sample(filename):
         return send_file(file_path, mimetype="application/pdf")
     return jsonify({"error": "Không tìm thấy tệp mẫu"}), 404
 
+# --- API Xác Thực Người Dùng (Auth Endpoints) ---
+
+@app.route("/api/auth/register", methods=["POST"])
+def auth_register():
+    data = request.get_json() or {}
+    username = data.get("username", "").strip()
+    email = data.get("email", "").strip()
+    password = data.get("password", "").strip()
+
+    if not username or not email or not password:
+        return jsonify({"error": "Vui lòng nhập đầy đủ thông tin"}), 400
+
+    if get_user_by_username(username):
+        return jsonify({"error": "Tên đăng nhập đã tồn tại"}), 409
+
+    try:
+        user = create_user(username, email, password, role="user")
+        session["user_id"] = user["id"]
+        return jsonify({"message": "Đăng ký thành công", "user": user})
+    except Exception as e:
+        return jsonify({"error": f"Lỗi tạo tài khoản: {str(e)}"}), 500
+
+@app.route("/api/auth/login", methods=["POST"])
+def auth_login():
+    data = request.get_json() or {}
+    username = data.get("username", "").strip()
+    password = data.get("password", "").strip()
+
+    user = get_user_by_username(username)
+    if not user or not check_password_hash(user["password_hash"], password):
+        return jsonify({"error": "Tên đăng nhập hoặc mật khẩu không chính xác"}), 401
+
+    session["user_id"] = user["id"]
+    return jsonify({
+        "message": "Đăng nhập thành công",
+        "user": {
+            "id": user["id"],
+            "username": user["username"],
+            "email": user["email"],
+            "role": user["role"]
+        }
+    })
+
+@app.route("/api/auth/logout", methods=["POST"])
+def auth_logout():
+    session.clear()
+    return jsonify({"message": "Đã đăng xuất thành công"})
+
+@app.route("/api/auth/me", methods=["GET"])
+def auth_me():
+    user = get_current_user()
+    if not user:
+        return jsonify({"authenticated": False})
+    return jsonify({
+        "authenticated": True,
+        "user": {
+            "id": user["id"],
+            "username": user["username"],
+            "email": user["email"],
+            "role": user["role"]
+        }
+    })
+
+# --- API Kho Lưu Trữ Tài Liệu (Document Library Endpoints) ---
+
+@app.route("/api/documents", methods=["GET"])
+def list_user_documents():
+    user = get_current_user()
+    user_id = user["id"] if user else "demo"
+    docs = get_documents_by_user(user_id)
+    return jsonify({"documents": docs})
+
+@app.route("/api/documents/<doc_id>", methods=["GET"])
+def get_document_details(doc_id):
+    user = get_current_user()
+    user_id = user["id"] if user else None
+    doc = get_document_by_id(doc_id, user_id)
+    if not doc:
+        return jsonify({"error": "Không tìm thấy tài liệu"}), 404
+    return jsonify({"document": doc})
+
+@app.route("/api/documents/<doc_id>", methods=["DELETE"])
+def remove_document(doc_id):
+    user = get_current_user()
+    if not user:
+        return jsonify({"error": "Vui lòng đăng nhập"}), 401
+    success = delete_document(doc_id, user["id"])
+    if not success:
+        return jsonify({"error": "Không thể xóa tài liệu"}), 404
+    return jsonify({"message": "Đã xóa tài liệu thành công"})
+
+# --- API Quản Trị Viên (Admin Key Tour Endpoints) ---
+
+@app.route("/api/admin/keys", methods=["GET"])
+@admin_required
+def admin_list_keys():
+    keys = get_all_api_keys()
+    # Ẩn bớt ký tự nhạy cảm khi hiển thị
+    sanitized = []
+    for k in keys:
+        item = dict(k)
+        val = item.get("key_value", "")
+        if len(val) > 8:
+            item["key_masked"] = val[:4] + "..." + val[-4:]
+        else:
+            item["key_masked"] = "***"
+        sanitized.append(item)
+    return jsonify({"keys": sanitized})
+
+@app.route("/api/admin/keys", methods=["POST"])
+@admin_required
+def admin_add_key():
+    data = request.get_json() or {}
+    provider = data.get("provider", "gemini").lower()
+    key_alias = data.get("key_alias", "").strip()
+    key_value = data.get("key_value", "").strip()
+    model_name = data.get("model_name", "gemini-1.5-flash").strip()
+    base_url = data.get("base_url", "").strip()
+    priority = int(data.get("priority", 1))
+
+    if not key_alias or not key_value:
+        return jsonify({"error": "Vui lòng nhập tên gợi nhớ và giá trị Key"}), 400
+
+    new_key = create_api_key(provider, key_alias, key_value, model_name, base_url, priority)
+    return jsonify({"message": "Thêm API Key thành công", "key": new_key})
+
+@app.route("/api/admin/keys/<key_id>/toggle", methods=["POST"])
+@admin_required
+def admin_toggle_key(key_id):
+    new_status = toggle_api_key_status(key_id)
+    if new_status is None:
+        return jsonify({"error": "Không tìm thấy key"}), 404
+    return jsonify({"message": "Đã thay đổi trạng thái key", "is_active": new_status})
+
+@app.route("/api/admin/keys/<key_id>", methods=["DELETE"])
+@admin_required
+def admin_delete_key(key_id):
+    success = delete_api_key(key_id)
+    if not success:
+        return jsonify({"error": "Không tìm thấy key để xóa"}), 404
+    return jsonify({"message": "Đã xóa API Key thành công"})
+
+# --- API Bóc Tách Tài Liệu (Processing Endpoint) ---
+
 @app.route("/api/process", methods=["POST"])
 def process_file():
     if "file" not in request.files:
@@ -196,9 +338,25 @@ def process_file():
         return jsonify({"error": "Tên tệp không hợp lệ"}), 400
 
     mode = request.form.get("mode", "LOCAL_MOCK")
+    model_choice = request.form.get("model_choice", "auto")
     fast_path = request.form.get("fast_path", "true").lower() == "true"
     kaggle_url = request.form.get("kaggle_url", "").strip()
     gemini_key = request.form.get("gemini_key", "").strip()
+    doc_lang = request.form.get("language", "vi")
+
+    # Cơ chế xoay tour API Key từ cơ sở dữ liệu nếu người dùng không truyền thủ công
+    active_key_id = None
+    if mode == "STANDALONE" and not gemini_key:
+        picked = KeyTourManager.get_next_key("gemini")
+        if picked:
+            gemini_key = picked["key_value"]
+            active_key_id = picked["id"]
+
+    if mode == "HYBRID_KAGGLE" and not kaggle_url:
+        picked = KeyTourManager.get_next_key("kaggle")
+        if picked:
+            kaggle_url = picked["key_value"]
+            active_key_id = picked["id"]
 
     settings = AppSettings(
         ocr_mode=mode,
@@ -209,6 +367,7 @@ def process_file():
 
     engine = HybridDocumentEngine(settings=settings)
     file_bytes = uploaded_file.read()
+    file_size = len(file_bytes)
     doc_id = str(uuid.uuid4())[:8]
 
     try:
@@ -217,6 +376,29 @@ def process_file():
             filename=uploaded_file.filename,
             document_id=doc_id
         )
+
+        # Cập nhật số lượt gọi xoay tour cho Key
+        if active_key_id:
+            KeyTourManager.record_usage(active_key_id)
+
+        # Lưu tài liệu vào Kho CSDL cho người dùng hiện tại (hoặc demo)
+        user = get_current_user()
+        owner_id = user["id"] if user else "demo"
+        try:
+            create_document(
+                user_id=owner_id,
+                filename=result.filename,
+                file_size=file_size,
+                total_pages=result.total_pages,
+                digital_pages=result.digital_pages_count,
+                scanned_pages=result.scanned_pages_count,
+                full_markdown=result.full_markdown,
+                model_used=model_choice if model_choice != "auto" else ("Fast-Path + " + mode),
+                language=doc_lang,
+                processing_time=result.processing_time_seconds
+            )
+        except Exception as db_err:
+            logger.warning(f"Không thể lưu tài liệu vào CSDL: {db_err}")
 
         return jsonify({
             "document_id": result.document_id,
