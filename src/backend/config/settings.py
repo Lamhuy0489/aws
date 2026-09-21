@@ -29,7 +29,7 @@ class AppSettings(BaseModel):
         description="Google Gemini API Key dùng cho chế độ dự phòng (Failover)"
     )
     gemini_model: str = Field(
-        default="gemini-1.5-flash",
+        default="gemini-3.6-flash",
         description="Tên mô hình Gemini dùng để OCR ảnh"
     )
     aws_region: str = Field(
