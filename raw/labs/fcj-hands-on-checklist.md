@@ -44,8 +44,8 @@ Bảng kiểm tra này tổng hợp các bài lab thực hành cốt lõi từ `
 
 ## 4. Giai đoạn 4: Tự động hóa & DevOps (Tùy chọn nâng cao)
 
-- [ ] **Lab 000015**: Đóng gói ứng dụng thành Docker container trên môi trường cục bộ.
-- [ ] **Lab 000016**: Đẩy Docker image lên Amazon ECR và chạy trên cụm Amazon ECS (hoặc ECS Fargate).
+- [x] **Lab 000015**: Đóng gói ứng dụng thành Docker container trên môi trường cục bộ.
+- [x] **Lab 000016**: Đẩy Docker image lên Amazon ECR và chạy trên cụm Amazon ECS (hoặc ECS Fargate).
 - [ ] **Lab 000017**: Thiết lập đường ống tự động tích hợp và triển khai (CI/CD) với AWS CodePipeline.
 - [x] **Lab 000037**: Viết tập lệnh AWS CloudFormation để tự động khởi tạo hạ tầng Web Server EC2 và Security Group (IaC).
 
