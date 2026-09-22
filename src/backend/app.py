@@ -1,9 +1,15 @@
-import json
+import sys
 import os
+import json
 import uuid
 import logging
 import boto3
 from typing import Dict, Any
+
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
 from src.backend.config.settings import get_settings
 from src.backend.parsers.hybrid_engine import HybridDocumentEngine
 from src.backend.exporters.markdown_exporter import MarkdownExporter
@@ -133,3 +139,13 @@ def handle_presigned_url_request(event: dict, settings: Any, s3_client: Any) -> 
             "key": upload_key
         })
     }
+
+if __name__ == "__main__":
+    from src.frontend.server import app
+    port = int(os.getenv("PORT", 5000))
+    print("=" * 60)
+    print("GIAO DIEN WEB HYBRID DOCUMENT OCR ENTERPRISE DANG CHAY TAI:")
+    print(f"http://localhost:{port}")
+    print("=" * 60)
+    app.run(host="0.0.0.0", port=port, debug=False)
+
