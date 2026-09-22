@@ -5,21 +5,28 @@
 {% block content %}
 <div class="page-header">
   <div>
-    <h1 class="page-title" data-i18n="lib_title">Kho Lưu Trữ Tài Liệu Cá Nhân</h1>
+    <h1 class="page-title" data-i18n="lib_title" style="display: flex; align-items: center; gap: 8px;">
+      <span data-icon="folder" data-icon-size="22" style="color: var(--color-accent);"></span>
+      <span>Kho Lưu Trữ Hồ Sơ & Tài Liệu</span>
+    </h1>
     <p class="page-subtitle" data-i18n="lib_subtitle">
-      Toàn bộ tài liệu được bảo mật và cô lập tuyệt đối theo tài khoản của bạn
+      Hồ sơ đã xử lý được lưu trữ bảo mật và phân quyền độc lập theo tài khoản của bạn
     </p>
   </div>
   <div>
-    <a href="/studio" class="btn btn-primary">+ Bóc Tách Tài Liệu Mới</a>
+    <a href="/studio" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 6px;">
+      <span data-icon="plus" data-icon-size="16"></span>
+      <span>Bóc Tách Tài Liệu Mới</span>
+    </a>
   </div>
 </div>
 
 <div class="card">
   <!-- Thanh Cong Cu & Tim Kiem -->
   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-md); gap: var(--space-md);">
-    <div style="flex: 1; max-width: 400px;">
-      <input type="text" id="librarySearchInput" class="form-input" placeholder="Tìm kiếm tài liệu theo tên..." data-i18n-placeholder="search_placeholder" />
+    <div style="flex: 1; max-width: 400px; position: relative;">
+      <span data-icon="search" data-icon-size="16" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--color-muted-foreground); pointer-events: none;"></span>
+      <input type="text" id="librarySearchInput" class="form-input" style="padding-left: 36px;" placeholder="Tìm kiếm tài liệu theo tên hoặc mô hình..." data-i18n-placeholder="search_placeholder" />
     </div>
     <div>
       <span id="docCountBadge" class="badge badge-muted">0 tài liệu</span>
@@ -32,7 +39,7 @@
       <thead>
         <tr>
           <th data-i18n="th_filename">Tên Tài Liệu</th>
-          <th data-i18n="th_pages">Số Trang (Số/Scan)</th>
+          <th data-i18n="th_pages">Số Trang (Số/Quét)</th>
           <th data-i18n="th_model">Mô Hình</th>
           <th data-i18n="th_time">Thời Gian Xử Lý</th>
           <th data-i18n="th_date">Ngày Lưu</th>
@@ -47,11 +54,15 @@
 
   <!-- Empty State -->
   <div id="libraryEmptyState" style="display: none; padding: 60px 20px; text-align: center;">
+    <div data-icon="folder" data-icon-size="44" style="color: var(--color-muted-foreground); margin: 0 auto 12px;"></div>
     <h3 style="font-size: 16px; font-weight: 600; color: var(--color-foreground);">Chưa Có Tài Liệu Nào</h3>
     <p style="font-size: 14px; color: var(--color-muted-foreground); max-width: 440px; margin: 8px auto 20px;" data-i18n="empty_lib">
       Chưa có tài liệu nào trong kho lưu trữ của bạn. Hãy tải tài liệu mới từ Studio.
     </p>
-    <a href="/studio" class="btn btn-primary">Đi Tới OCR Studio</a>
+    <a href="/studio" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 6px;">
+      <span data-icon="layers" data-icon-size="16"></span>
+      <span>Đi Tới OCR Studio</span>
+    </a>
   </div>
 </div>
 
@@ -59,17 +70,33 @@
 <div id="docPreviewModal" class="modal-overlay" style="display: none;">
   <div class="modal-content" style="max-width: 900px;">
     <div class="modal-header">
-      <h3 class="card-title" id="modalDocTitle">Chi Tiết Tài Liệu</h3>
-      <button type="button" class="btn btn-outline btn-sm" onclick="closeDocModal()">[X] Đóng</button>
+      <h3 class="card-title" id="modalDocTitle" style="display: flex; align-items: center; gap: 8px;">
+        <span data-icon="fileText" data-icon-size="18" style="color: var(--color-accent);"></span>
+        <span>Chi Tiết Tài Liệu</span>
+      </h3>
+      <button type="button" class="btn btn-outline btn-sm" onclick="closeDocModal()" style="display: inline-flex; align-items: center; gap: 4px;">
+        <span data-icon="x" data-icon-size="14"></span>
+        <span>Đóng</span>
+      </button>
     </div>
     <div class="modal-body" style="background-color: #E2E8F0; padding: var(--space-lg);">
       <div id="modalDocSheet" class="doc-sheet">
         <!-- Noi dung bóc tách render chuan A4 -->
       </div>
     </div>
-    <div class="modal-footer">
-      <button type="button" class="btn btn-primary" onclick="downloadModalDocx()">Tải Về Word (.docx)</button>
-      <button type="button" class="btn btn-outline" onclick="downloadModalMarkdown()">Tải Về Markdown</button>
+    <div class="modal-footer" style="flex-wrap: wrap; gap: 8px;">
+      <button type="button" class="btn btn-primary" onclick="openCurrentDocInStudio()" style="display: inline-flex; align-items: center; gap: 6px;">
+        <span data-icon="externalLink" data-icon-size="14"></span>
+        <span>Mở Trong Studio</span>
+      </button>
+      <button type="button" class="btn btn-outline" onclick="downloadModalDocx()" style="display: inline-flex; align-items: center; gap: 6px;">
+        <span data-icon="download" data-icon-size="14"></span>
+        <span>Tải Về Word (.docx)</span>
+      </button>
+      <button type="button" class="btn btn-outline" onclick="downloadModalMarkdown()" style="display: inline-flex; align-items: center; gap: 6px;">
+        <span data-icon="file" data-icon-size="14"></span>
+        <span>Tải Về Markdown</span>
+      </button>
       <button type="button" class="btn btn-outline" onclick="closeDocModal()">Đóng</button>
     </div>
   </div>
@@ -77,5 +104,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/js/library.js"></script>
+<script src="/static/js/library.js?v=20260922_02"></script>
 {% endblock %}

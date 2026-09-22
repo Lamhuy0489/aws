@@ -5,14 +5,18 @@
 {% block content %}
 <div class="page-header">
   <div>
-    <h1 class="page-title" data-i18n="admin_title">Bảng Điều Khiển Quản Trị Hệ Thống</h1>
+    <h1 class="page-title" data-i18n="admin_title" style="display: flex; align-items: center; gap: 8px;">
+      <span data-icon="shield" data-icon-size="22" style="color: var(--color-accent);"></span>
+      <span>Bảng Điều Khiển Quản Trị Hệ Thống</span>
+    </h1>
     <p class="page-subtitle" data-i18n="admin_subtitle">
       Giám sát tài nguyên, điều phối xoay tour API Key và quản lý tài khoản
     </p>
   </div>
   <div>
-    <button type="button" class="btn btn-primary" onclick="openAddKeyModal()" data-i18n="btn_add_key">
-      + Thêm API Key Vào Tour
+    <button type="button" class="btn btn-primary" onclick="openAddKeyModal()" data-i18n="btn_add_key" style="display: inline-flex; align-items: center; gap: 6px;">
+      <span data-icon="plus" data-icon-size="14"></span>
+      <span>Thêm Khóa API Mới</span>
     </button>
   </div>
 </div>
@@ -20,29 +24,41 @@
 <!-- Hang The KPI Tong Quan -->
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--space-lg); margin-bottom: var(--space-xl);">
   <div class="card">
-    <div style="font-size: 12px; font-weight: 600; text-transform: uppercase; color: var(--color-muted-foreground);" data-i18n="kpi_users">
-      Tổng Số Người Dùng
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <div style="font-size: 12px; font-weight: 600; text-transform: uppercase; color: var(--color-muted-foreground);" data-i18n="kpi_users">
+        Tổng Số Người Dùng
+      </div>
+      <span data-icon="user" data-icon-size="16" style="color: var(--color-muted-foreground);"></span>
     </div>
     <div id="kpiTotalUsers" style="font-size: 32px; font-weight: 700; color: var(--color-foreground); margin-top: 6px;">-</div>
   </div>
 
   <div class="card">
-    <div style="font-size: 12px; font-weight: 600; text-transform: uppercase; color: var(--color-muted-foreground);" data-i18n="kpi_docs">
-      Tài Liệu Toàn Hệ Thống
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <div style="font-size: 12px; font-weight: 600; text-transform: uppercase; color: var(--color-muted-foreground);" data-i18n="kpi_docs">
+        Tài Liệu Toàn Hệ Thống
+      </div>
+      <span data-icon="fileText" data-icon-size="16" style="color: var(--color-muted-foreground);"></span>
     </div>
     <div id="kpiTotalDocs" style="font-size: 32px; font-weight: 700; color: var(--color-foreground); margin-top: 6px;">-</div>
   </div>
 
   <div class="card">
-    <div style="font-size: 12px; font-weight: 600; text-transform: uppercase; color: var(--color-muted-foreground);" data-i18n="kpi_keys">
-      API Key Đang Hoạt Động
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <div style="font-size: 12px; font-weight: 600; text-transform: uppercase; color: var(--color-muted-foreground);" data-i18n="kpi_keys">
+        API Key Đang Hoạt Động
+      </div>
+      <span data-icon="key" data-icon-size="16" style="color: var(--color-accent);"></span>
     </div>
     <div id="kpiActiveKeys" style="font-size: 32px; font-weight: 700; color: var(--color-accent); margin-top: 6px;">-</div>
   </div>
 
   <div class="card">
-    <div style="font-size: 12px; font-weight: 600; text-transform: uppercase; color: var(--color-muted-foreground);" data-i18n="kpi_usage">
-      Tổng Lượt Gọi Key Tour
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <div style="font-size: 12px; font-weight: 600; text-transform: uppercase; color: var(--color-muted-foreground);" data-i18n="kpi_usage">
+        Tổng Lượt Gọi Key Tour
+      </div>
+      <span data-icon="refresh" data-icon-size="16" style="color: var(--color-muted-foreground);"></span>
     </div>
     <div id="kpiKeyUsage" style="font-size: 32px; font-weight: 700; color: var(--color-foreground); margin-top: 6px;">-</div>
   </div>
@@ -51,8 +67,14 @@
 <!-- Phan He Quan Ly Tour Xoay API Key -->
 <div class="card" style="margin-bottom: var(--space-xl);">
   <div class="card-header">
-    <h3 class="card-title" data-i18n="sec_key_tour">Quản Lý Tour Xoay API Key (Round-Robin Key Tour)</h3>
-    <button type="button" class="btn btn-outline btn-sm" onclick="loadAdminKeys()">Làm Mới Danh Sách</button>
+    <h3 class="card-title" data-i18n="sec_key_tour" style="display: flex; align-items: center; gap: 8px;">
+      <span data-icon="key" data-icon-size="18" style="color: var(--color-accent);"></span>
+      <span>Quản Lý Cụm Khóa Kết Nối API (Round-Robin Key Tour)</span>
+    </h3>
+    <button type="button" class="btn btn-outline btn-sm" onclick="loadAdminKeys()" style="display: inline-flex; align-items: center; gap: 6px;">
+      <span data-icon="refresh" data-icon-size="14"></span>
+      <span>Làm Mới Danh Sách</span>
+    </button>
   </div>
 
   <div class="table-responsive">
@@ -180,5 +202,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/js/admin.js"></script>
+<script src="/static/js/admin.js?v=20260922_03"></script>
 {% endblock %}

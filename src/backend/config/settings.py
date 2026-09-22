@@ -29,7 +29,7 @@ class AppSettings(BaseModel):
         description="Google Gemini API Key dùng cho chế độ dự phòng (Failover)"
     )
     gemini_model: str = Field(
-        default="gemini-3.6-flash",
+        default="gemini-flash-lite-latest",
         description="Tên mô hình Gemini dùng để OCR ảnh"
     )
     aws_region: str = Field(
@@ -45,7 +45,7 @@ class AppSettings(BaseModel):
         description="Tên bảng DynamoDB lưu trữ tiến trình"
     )
     timeout_seconds: int = Field(
-        default=30,
+        default=120,
         description="Thời gian chờ tối đa cho các cuộc gọi API ngoại vi"
     )
 
@@ -63,6 +63,11 @@ def load_settings_from_ssm(parameter_name: str = "/hybrid_ocr/config", region: s
 
 def get_settings() -> AppSettings:
     """Khởi tạo cấu hình hệ thống kết hợp giữa SSM Parameter Store và biến môi trường."""
+    try:
+        from dotenv import load_dotenv
+        load_dotenv()
+    except Exception:
+        pass
     region = os.getenv("AWS_REGION", "ap-southeast-1")
     ssm_config = load_settings_from_ssm(region=region)
     

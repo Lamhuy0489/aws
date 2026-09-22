@@ -41,29 +41,59 @@ class OCRDispatcher:
                 "**Tổng giá trị thanh toán**: 2,057,000 VNĐ"
             )
 
+        kaggle_err = None
         # Thử gọi Kaggle Endpoint nếu ở chế độ HYBRID_KAGGLE
         if self.settings.ocr_mode == "HYBRID_KAGGLE" and self.settings.kaggle_endpoint:
             try:
-                logger.info(f"Đang gửi ảnh sang Kaggle OCR Endpoint: {self.settings.kaggle_endpoint}")
+                logger.info(f"Đang gửi ảnh sang Kaggle OCR Endpoint: {self.settings.kaggle_endpoint} (Timeout: {self.settings.timeout_seconds}s)")
                 markdown_result = self._call_kaggle_endpoint(image_bytes)
                 if markdown_result:
                     return markdown_result
             except Exception as e:
-                logger.warning(f"Lỗi khi gọi Kaggle OCR Endpoint ({str(e)}). Đang kích hoạt chuyển đổi dự phòng sang Gemini...")
+                kaggle_err = str(e)
+                logger.warning(f"Lỗi khi gọi Kaggle OCR Endpoint ({kaggle_err}). Đang kích hoạt chuyển đổi dự phòng sang Gemini...")
 
-        # Kích hoạt Standalone Fallback qua Gemini Flash API
-        if self.settings.gemini_api_key:
+        # Tự động nạp Gemini API Key từ Tour Xoay nếu chưa có
+        if not self.settings.gemini_api_key:
             try:
-                logger.info("Đang gọi Google Gemini 1.5 Flash Vision API làm dự phòng...")
-                return self._call_gemini_vision(image_bytes)
-            except Exception as e:
-                logger.error(f"Lỗi khi gọi Gemini Vision API: {str(e)}")
-                raise RuntimeError(f"Tất cả các dịch vụ OCR ngoại vi đều thất bại: {str(e)}")
+                from src.backend.llm.key_tour_manager import KeyTourManager
+                picked_g = KeyTourManager.get_next_key("gemini")
+                if picked_g:
+                    self.settings.gemini_api_key = picked_g["key_value"]
+                    self.settings.gemini_model = picked_g.get("model_name") or "gemini-flash-lite-latest"
+                    logger.info(f"Đã tự động nạp Gemini Key '{picked_g['key_alias']}' cho cơ chế dự phòng Tầng 2 OCR.")
+            except Exception as tour_err:
+                logger.warning(f"Không thể nạp Gemini Key dự phòng: {tour_err}")
+
+        # Kích hoạt Standalone Fallback qua Gemini Flash API nếu có cấu hình
+        if self.settings.gemini_api_key:
+            return self._call_gemini_vision_with_failover(image_bytes)
+
+        if kaggle_err:
+            raise RuntimeError(f"Máy chủ Kaggle OCR phản hồi quá thời gian cho phép hoặc gặp lỗi mạng: {kaggle_err}")
 
         raise RuntimeError("Không có endpoint Kaggle hoặc API Key Gemini hợp lệ nào được cấu hình cho Tầng 2 OCR.")
 
     def _call_kaggle_endpoint(self, image_bytes: bytes) -> str:
         """Gửi ảnh đến máy chủ FastAPI đang chạy trên Kaggle qua Cloudflare Tunnel."""
+        # Tự động chuẩn hóa kích thước ảnh về tối đa 1280px để tối ưu token thị giác và tăng tốc GPU
+        try:
+            import io
+            from PIL import Image
+            pil_img = Image.open(io.BytesIO(image_bytes))
+            w, h = pil_img.size
+            max_dim = 1280
+            if max(w, h) > max_dim:
+                scale = max_dim / max(w, h)
+                new_w, new_h = int(w * scale), int(h * scale)
+                pil_img = pil_img.resize((new_w, new_h), Image.Resampling.LANCZOS)
+                buf = io.BytesIO()
+                pil_img.convert("RGB").save(buf, format="JPEG", quality=85)
+                image_bytes = buf.getvalue()
+                logger.info(f"Đã chuẩn hóa ảnh từ ({w}x{h}) về ({new_w}x{new_h}) để tối ưu VRAM GPU Kaggle.")
+        except Exception as resize_err:
+            logger.warning(f"Không thể chuẩn hóa kích thước ảnh: {resize_err}")
+
         b64_image = base64.b64encode(image_bytes).decode("utf-8")
         payload = {
             "image_base64": b64_image,
@@ -74,21 +104,29 @@ class OCRDispatcher:
         if not endpoint.endswith("/ocr"):
             endpoint = endpoint.rstrip("/") + "/ocr"
 
+        # Giới hạn thời gian chờ tối đa 5 giây; nếu không phản hồi thì tự động Failover tức thì sang Gemini
+        kaggle_timeout = min(self.settings.timeout_seconds, 5)
         response = requests.post(
             endpoint,
             json=payload,
-            timeout=self.settings.timeout_seconds,
+            timeout=kaggle_timeout,
             headers={"Content-Type": "application/json"}
         )
         response.raise_for_status()
         data = response.json()
         return data.get("markdown", data.get("text", "")).strip()
 
-    def _call_gemini_vision(self, image_bytes: bytes) -> str:
-        """Gửi ảnh trực tiếp đến Gemini 1.5 Flash REST API mà không cần cài đặt thư viện nặng."""
+    def _call_gemini_vision_with_failover(self, image_bytes: bytes) -> str:
+        """Gửi ảnh trực tiếp đến Gemini Vision REST API với cơ chế tự động xoay chuyển mô hình dự phòng (Failover)."""
         b64_image = base64.b64encode(image_bytes).decode("utf-8")
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.settings.gemini_model}:generateContent?key={self.settings.gemini_api_key}"
         
+        # Danh sách mô hình ưu tiên: Mô hình cấu hình -> gemini-flash-lite-latest -> gemini-3.5-flash-lite
+        primary_model = self.settings.gemini_model or "gemini-flash-lite-latest"
+        candidate_models = [primary_model]
+        for fallback in ["gemini-flash-lite-latest", "gemini-3.5-flash-lite"]:
+            if fallback not in candidate_models:
+                candidate_models.append(fallback)
+
         payload = {
             "contents": [
                 {
@@ -109,22 +147,39 @@ class OCRDispatcher:
             }
         }
 
-        response = requests.post(
-            url,
-            json=payload,
-            timeout=self.settings.timeout_seconds,
-            headers={"Content-Type": "application/json"}
-        )
-        response.raise_for_status()
-        data = response.json()
-        
-        try:
-            candidates = data.get("candidates", [])
-            if candidates:
-                parts = candidates[0].get("content", {}).get("parts", [])
-                if parts:
-                    return parts[0].get("text", "").strip()
-        except Exception as e:
-            logger.error(f"Lỗi khi bóc tách phản hồi JSON từ Gemini: {e}")
+        last_err_msg = ""
+        # Timeout cho moi lan thu model: toi da 12 giay de tranh treo giao dien
+        per_try_timeout = min(self.settings.timeout_seconds, 12)
 
-        return ""
+        for model in candidate_models:
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={self.settings.gemini_api_key}"
+            try:
+                logger.info(f"Đang gửi yêu cầu Vision OCR tới Google Gemini ({model})...")
+                response = requests.post(
+                    url,
+                    json=payload,
+                    timeout=per_try_timeout,
+                    headers={"Content-Type": "application/json"}
+                )
+
+                if response.status_code == 200:
+                    data = response.json()
+                    candidates = data.get("candidates", [])
+                    if candidates:
+                        parts = candidates[0].get("content", {}).get("parts", [])
+                        if parts:
+                            return parts[0].get("text", "").strip()
+                    return ""
+                
+                # Neu model bi loi 404, 503 hoac 429, ghi log va chuyen sang model ke tiep
+                status_code = response.status_code
+                logger.warning(f"Mô hình {model} phản hồi mã lỗi {status_code}: {response.text[:120]}. Đang chuyển mô hình dự phòng...")
+                last_err_msg = f"HTTP {status_code}: {response.text[:100]}"
+            except requests.exceptions.Timeout:
+                logger.warning(f"Mô hình {model} bị Read Timeout sau {per_try_timeout}s. Đang chuyển sang mô hình siêu tốc dự phòng...")
+                last_err_msg = f"Timeout sau {per_try_timeout}s"
+            except Exception as e:
+                logger.warning(f"Lỗi kết nối khi gọi {model}: {e}. Đang chuyển mô hình dự phòng...")
+                last_err_msg = str(e)
+
+        raise RuntimeError(f"Tất cả các mô hình Gemini Vision đều phản hồi chậm hoặc quá tải. Chi tiết lỗi cuối: {last_err_msg}")

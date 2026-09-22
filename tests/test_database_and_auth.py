@@ -206,3 +206,67 @@ def test_multi_page_view_routes_and_protection(client):
     resp_stats = client.get("/api/admin/stats")
     assert resp_stats.status_code == 200
     assert "stats" in resp_stats.json
+
+def test_studio_active_document_persistence(client):
+    """Kiem tra luu tru va khôi phuc state tai lieu dang thao tac giua Studio va CSDL."""
+    # Dang nhap
+    client.post("/api/auth/login", json={"username": "demo", "password": "Demo@123"})
+    demo = get_user_by_username("demo")
+
+    # Khi chua co tai lieu nao, active-document tra ve None
+    resp_init = client.get("/api/studio/active-document")
+    assert resp_init.status_code == 200
+    assert resp_init.json["document"] is None
+
+    # Tao tai lieu moi cho user
+    doc = create_document(
+        user_id=demo["id"],
+        filename="bao_cao_tai_chinh.pdf",
+        file_size=5000,
+        total_pages=2,
+        digital_pages=2,
+        scanned_pages=0,
+        full_markdown="# Bao Cao Tai Chinh",
+        model_used="Fast-Path",
+        language="vi"
+    )
+
+    # GET active-document tra ve tai lieu vua tao
+    resp_active = client.get("/api/studio/active-document")
+    assert resp_active.status_code == 200
+    assert resp_active.json["document"] is not None
+    assert resp_active.json["document"]["filename"] == "bao_cao_tai_chinh.pdf"
+
+    # POST active-document de set id
+    resp_set = client.post("/api/studio/active-document", json={"document_id": doc["id"]})
+    assert resp_set.status_code == 200
+    assert resp_set.json["active_document_id"] == doc["id"]
+
+    # DELETE active-document
+    resp_del = client.delete("/api/studio/active-document")
+    assert resp_del.status_code == 200
+    assert resp_del.json["success"] is True
+
+def test_document_translation_db_update():
+    """Kiem tra cap nhat ban dich Markdown vao CSDL."""
+    from src.backend.database.db import update_document_translation
+    demo = get_user_by_username("demo")
+    doc = create_document(
+        user_id=demo["id"],
+        filename="hop_dong.pdf",
+        file_size=2048,
+        total_pages=1,
+        digital_pages=1,
+        scanned_pages=0,
+        full_markdown="# Hop Dong Kinh Te",
+        model_used="Fast-Path",
+        language="vi"
+    )
+
+    # Cap nhat ban dich
+    ok = update_document_translation(doc["id"], demo["id"], "# Economic Contract (English Translation)")
+    assert ok is True
+
+    # Truy van lai de kiem tra
+    retrieved = get_document_by_id(doc["id"], demo["id"])
+    assert retrieved["translated_markdown"] == "# Economic Contract (English Translation)"

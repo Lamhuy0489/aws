@@ -46,72 +46,77 @@ class FastNativeParser:
 
             # Tạo ảnh xem trước độ nét cao cho giao diện (DPI 130)
             pix = page.get_pixmap(dpi=130)
-            preview_png_b64 = "data:image/png;base64," + base64.b64encode(pix.tobytes("png")).decode("utf-8")
+            # Lưu trữ base64 thuần túy (không kèm tiền tố trùng lặp)
+            preview_png_b64 = base64.b64encode(pix.tobytes("png")).decode("utf-8")
 
             # Đánh giá xem có phải trang scan hay không
             is_scanned = char_count < self.scan_threshold_chars
-            page_image_bytes = pix.tobytes("jpeg") if is_scanned else None
+            # Luôn lưu trữ byte ảnh để sẵn sàng cho Tầng 2 OCR hoặc tải về
+            page_image_bytes = pix.tobytes("jpeg")
 
             tables_count = 0
-            markdown_elements = []
 
-            # 1. Tìm các bảng biểu có đường kẻ hoặc cấu trúc cột
+            # 1. Tìm các bảng biểu thực sự có đường kẻ vector graphics
+            # Tuyệt đối không dùng vertical_strategy='text' vì sẽ biến văn bản canh đều thành bảng giả
             table_rects = []
-            table_map = {}
             try:
-                # Thử tìm bảng bằng đường kẻ trước
                 tabs = page.find_tables()
-                if not tabs or not tabs.tables:
-                    # Nếu không có đường kẻ, thử tìm bảng theo căn lề cột văn bản
-                    tabs = page.find_tables(vertical_strategy="text", horizontal_strategy="text")
-
                 if tabs and tabs.tables:
+                    page_rect = page.rect
                     for tab in tabs.tables:
                         extracted = tab.extract()
                         if extracted and len(extracted) >= 2 and len(extracted[0]) >= 2:
-                            tables_count += 1
                             t_rect = fitz.Rect(tab.bbox)
-                            table_rects.append(t_rect)
-                            table_map[tab.bbox] = extracted
+                            # Bảng hợp lệ không được chiếm trọn toàn bộ trang
+                            if t_rect.get_area() < 0.88 * page_rect.get_area():
+                                tables_count += 1
+                                table_rects.append((t_rect, tab.bbox, extracted))
             except Exception as e:
                 logger.debug(f"Lỗi phân tích bảng trên trang {page_num}: {e}")
 
-            # 2. Bóc tách các khối văn bản ngoài bảng
-            blocks = page.get_text("blocks")
-            # Sắp xếp các khối văn bản theo thứ tự đọc tự nhiên (y0 tăng dần)
-            blocks.sort(key=lambda b: (b[1], b[0]))
-
-            spatial_elements = []
+            # 2. Bóc tách các khối văn bản ngoài bảng theo thứ tự đọc chuẩn (sort=True)
+            blocks = page.get_text("blocks", sort=True)
+            elements = []
+            pending_tables = list(table_rects)
 
             for b in blocks:
                 b_rect = fitz.Rect(b[:4])
                 # Kiểm tra xem khối chữ này có nằm trong bảng nào không
                 in_table = False
-                for tr in table_rects:
-                    intersect = tr & b_rect
-                    if intersect.get_area() > 0.4 * b_rect.get_area():
+                for tr, bbox, matrix in table_rects:
+                    if (tr & b_rect).get_area() > 0.4 * b_rect.get_area():
                         in_table = True
                         break
-                
-                if not in_table:
-                    block_text = b[4].strip()
-                    if block_text:
-                        # Tinh chỉnh định dạng khối chữ
-                        formatted_text = self._format_text_block(block_text, b)
-                        spatial_elements.append((b[1], "text", formatted_text))
 
-            # 3. Thêm các bảng vào danh sách không gian
-            for bbox, matrix in table_map.items():
+                if in_table:
+                    continue
+
+                # Chèn các bảng xuất hiện trước khối chữ này theo trục dọc y
+                to_remove = []
+                for item in pending_tables:
+                    tr, bbox, matrix = item
+                    if tr.y1 <= b_rect.y0 + 5:
+                        md_table = self._convert_table_to_markdown(matrix)
+                        if md_table:
+                            elements.append(md_table)
+                        to_remove.append(item)
+                for item in to_remove:
+                    pending_tables.remove(item)
+
+                block_text = b[4].strip()
+                if block_text:
+                    formatted_text = self._format_text_block(block_text, b, page_idx)
+                    if formatted_text:
+                        elements.append(formatted_text)
+
+            # Chèn các bảng còn lại
+            for item in pending_tables:
+                tr, bbox, matrix = item
                 md_table = self._convert_table_to_markdown(matrix)
                 if md_table:
-                    spatial_elements.append((bbox[1], "table", md_table))
+                    elements.append(md_table)
 
-            # 4. Sắp xếp toàn bộ các phần tử (Tiêu đề, Text, Bảng biểu) theo tọa độ y0 dọc
-            spatial_elements.sort(key=lambda item: item[0])
-
-            content_lines = [item[2] for item in spatial_elements]
-            content = "\n\n".join(content_lines).strip()
-
+            content = "\n\n".join(elements).strip()
             if not content and raw_text:
                 content = raw_text
 
@@ -128,40 +133,108 @@ class FastNativeParser:
         doc.close()
         return parsed_pages
 
-    def _format_text_block(self, text: str, block_tuple: tuple) -> str:
+    def _format_text_block(self, text: str, block_tuple: tuple, page_idx: int = 0) -> str:
         """Tự động phân loại tiêu đề, nhãn giá trị và danh sách để giữ bố cục Markdown chuẩn."""
-        lines = [line.strip() for line in text.split("\n") if line.strip()]
+        cleaned_text = text.strip()
+        if not cleaned_text:
+            return ""
+
+        # Chuẩn hóa các ký tự bullet điểm từ Word/PDF sang định dạng Markdown
+        cleaned_text = re.sub(r"^[\u2022\u25cf\u25aa\u25ab]\s*", "- ", cleaned_text, flags=re.MULTILINE)
+
+        lines = [line.strip() for line in cleaned_text.split("\n") if line.strip()]
         if not lines:
             return ""
 
         first_line = lines[0]
-        # Tiêu đề lớn của tài liệu: Tự động căn giữa
-        title_keywords = ["HÓA ĐƠN", "HỢP ĐỒNG", "CỘNG HÒA", "ĐỘC LẬP", "BÁO CÁO", "BIÊN BẢN", "THÔNG BÁO", "CHỨNG NHẬN"]
-        if len(lines) == 1:
-            if any(kw in first_line.upper() for kw in title_keywords):
-                return f"# {first_line}"
-            elif first_line.isupper() and len(first_line) < 100:
+        y0 = block_tuple[1]
+
+        # 1. Nhận diện Header đầu trang (running header)
+        if y0 < 50 and len(lines) <= 2:
+            if any(k in first_line.lower() for k in ["conference", "hội nghị", "tạp chí", "journal", "proceedings", "fit_cma", "khoa cntt"]):
+                return f"> *{' '.join(lines)}*"
+
+        # 2. Tiêu đề lớn tài liệu hoặc bài báo khoa học (Document Title)
+        title_keywords = ["HÓA ĐƠN", "HỢP ĐỒNG", "CỘNG HÒA", "ĐỘC LẬP", "BÁO CÁO", "BIÊN BẢN", "THÔNG BÁO", "CHỨNG NHẬN", "INVOICE", "REPORT"]
+        if any(kw in first_line.upper() for kw in title_keywords):
+            return f"# {' '.join(lines)}"
+
+        if page_idx == 0 and 60 <= y0 < 110 and len(lines) <= 3:
+            if not any(lines[-1].endswith(end) for end in [".", ";", ":"]):
+                if len(" ".join(lines)) < 160:
+                    return f"# {' '.join(lines)}"
+
+        # 3. Tác giả (Author) trên trang đầu
+        if page_idx == 0 and 110 <= y0 <= 160 and len(lines) <= 2:
+            if not any(kw in first_line.lower() for kw in ["abstract", "tóm tắt", "keywords", "từ khóa"]):
+                if not any(first_line.startswith(p) for p in ["#", "-", "*", "1."]):
+                    return f"**Tác giả:** {' '.join(lines)}"
+
+        # 4. Nhận diện các mục đề mục (Section Headings)
+        if len(lines) <= 2 and len(first_line) < 100:
+            first_lower = first_line.lower()
+            if first_lower in ["abstract", "tóm tắt", "references", "tài liệu tham khảo", "acknowledgment", "acknowledgments", "lời cảm ơn", "phụ lục", "appendix"]:
                 return f"## {first_line}"
-            elif first_line.endswith(":") and len(first_line) < 80:
+            if first_line.isupper() and len(first_line) < 80 and not first_line.endswith("."):
+                return f"## {first_line}"
+
+            # Cấp 2: 1. Introduction, 2. Background
+            m_h2 = re.match(r"^([0-9]+)\.\s+([A-ZÀ-Ỹ].+)$", first_line)
+            if m_h2:
+                return f"## {first_line}"
+
+            # Cấp 3: 2.1. The Role of Attributes
+            m_h3 = re.match(r"^([0-9]+\.[0-9]+)\.\s+([A-ZÀ-Ỹ].+)$", first_line)
+            if m_h3:
                 return f"### {first_line}"
 
-        # Xử lý các cặp nhãn Key: Value (ví dụ: Số hóa đơn: INV-001 | Ngày: 21/09/2026)
+            # Cấp 4: 2.1.1. Sub-section
+            m_h4 = re.match(r"^([0-9]+\.[0-9]+\.[0-9]+)\.\s+([A-ZÀ-Ỹ].+)$", first_line)
+            if m_h4:
+                return f"#### {first_line}"
+
+        # 5. Xử lý chú thích bảng, hình ảnh hoặc Keywords (Keywords: ..., Table 1: ..., Figure 1: ...)
+        caption_match = re.match(r"^(Keywords|Từ khóa|Table \d+|Bảng \d+|Figure \d+|Hình \d+)[:.]\s*(.*)$", first_line, re.IGNORECASE)
+        if caption_match:
+            full_caption = " ".join(lines)
+            return f"**{full_caption}**"
+
+        # 6. Xử lý các cặp nhãn Key: Value (ví dụ: Số hóa đơn: INV-001 | Ngày lập: 21/09/2026)
         formatted_lines = []
+        is_key_value_block = True
         for line in lines:
-            if any(kw in line.upper() for kw in title_keywords):
-                formatted_lines.append(f"# {line}")
-                continue
-
-            match = re.match(r"^([A-ZÀ-Ỹa-zà-ỹ0-9\s/_-]{2,30}):\s*(.+)$", line)
-            if match and not line.startswith("-"):
-                key, val = match.groups()
+            kv_match = re.match(r"^([A-ZÀ-Ỹa-zà-ỹ0-9\s/_-]{2,30}):\s*(.+)$", line)
+            if kv_match and not line.startswith("-") and not line.startswith("*"):
+                key, val = kv_match.groups()
                 formatted_lines.append(f"**{key.strip()}:** {val.strip()}")
-            elif line.startswith("-") or line.startswith("*"):
-                formatted_lines.append(line)
             else:
-                formatted_lines.append(line)
+                is_key_value_block = False
+                break
 
-        return "\n".join(formatted_lines)
+        if is_key_value_block and formatted_lines:
+            return "\n".join(formatted_lines)
+
+        # 7. Nối dòng mềm cho các đoạn văn bản (Soft-wrap unwrap) và danh sách
+        unwrapped = []
+        current_para = []
+
+        for line in lines:
+            if line.startswith("- ") or line.startswith("* ") or re.match(r"^\d+\.\s+", line):
+                if current_para:
+                    unwrapped.append(" ".join(current_para))
+                    current_para = []
+                unwrapped.append(line)
+            else:
+                if current_para and current_para[-1].endswith("-"):
+                    # Nối từ bị ngắt dấu gạch nối cuối dòng (vd: signature-\nspecific -> signature-specific)
+                    current_para[-1] = current_para[-1][:-1] + line
+                else:
+                    current_para.append(line)
+
+        if current_para:
+            unwrapped.append(" ".join(current_para))
+
+        return "\n\n".join(unwrapped)
 
     def _parse_with_pypdf(self, pdf_bytes: bytes) -> List[ParsedPage]:
         import pypdf

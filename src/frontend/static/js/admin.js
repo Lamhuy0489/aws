@@ -3,13 +3,14 @@
  * Quan ly KPIs, Dieu phoi tour xoay API Key va danh sach nguoi dung toan he thong
  */
 
-document.addEventListener("DOMContentLoaded", () => {
+window.initAdminPage = () => {
   loadAdminStats();
   loadAdminKeys();
   loadAdminUsers();
 
   const addKeyForm = document.getElementById("formAddKey");
-  if (addKeyForm) {
+  if (addKeyForm && !addKeyForm.dataset.initialized) {
+    addKeyForm.dataset.initialized = "true";
     addKeyForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       const provider = document.getElementById("newKeyProvider").value;
@@ -40,7 +41,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
-});
+  if (window.AppIcons) window.AppIcons.initAutoIcons();
+};
 
 async function loadAdminStats() {
   try {
@@ -61,7 +63,7 @@ async function loadAdminStats() {
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td><strong>${escapeHtml(item.filename)}</strong></td>
-          <td><span class="badge badge-muted">${item.username || "demo"}</span></td>
+          <td><span class="badge badge-muted">${item.username || "Hệ thống"}</span></td>
           <td>${item.total_pages} trang</td>
           <td><span class="badge badge-muted">${escapeHtml(item.model_used)}</span></td>
           <td>${item.processing_time ? item.processing_time.toFixed(2) + "s" : "0.00s"}</td>
@@ -101,19 +103,29 @@ async function loadAdminKeys() {
         <td>${statusBadge}</td>
         <td>
           <div style="display: flex; gap: 6px;">
-            <button class="btn btn-outline btn-sm" onclick="toggleKeyStatus('${k.id}')">
-              ${isActive ? "Tam dung" : "Kich hoat"}
+            <button class="btn btn-outline btn-sm btn-toggle">
+              ${isActive ? "Tạm dừng" : "Kích hoạt"}
             </button>
-            <button class="btn btn-danger btn-sm" onclick="deleteKey('${k.id}', '${escapeHtml(k.key_alias)}')">
-              Xoa
+            <button class="btn btn-danger btn-sm btn-delete">
+              Xóa
             </button>
           </div>
         </td>
       `;
+
+      const btnToggle = tr.querySelector(".btn-toggle");
+      if (btnToggle) {
+        btnToggle.addEventListener("click", () => toggleKeyStatus(k.id));
+      }
+      const btnDelete = tr.querySelector(".btn-delete");
+      if (btnDelete) {
+        btnDelete.addEventListener("click", () => deleteKey(k.id, k.key_alias));
+      }
+
       tableBody.appendChild(tr);
     });
   } catch (err) {
-    console.error("Loi load keys:", err);
+    console.error("Lỗi tải danh sách keys:", err);
   }
 }
 
@@ -124,22 +136,22 @@ async function toggleKeyStatus(keyId) {
     loadAdminKeys();
     loadAdminStats();
   } catch (err) {
-    showToast("Khong the doi trang thai key: " + err.message, "error");
+    showToast("Không thể đổi trạng thái key: " + err.message, "error");
   }
 }
 
 async function deleteKey(keyId, alias) {
-  if (!confirm(`Ban co chac chan muon xoa khoa "${alias}" khoi tour xoay?`)) {
+  if (!confirm(`Bạn có chắc chắn muốn xóa khóa "${alias}" khỏi tour xoay?`)) {
     return;
   }
 
   try {
     await apiFetch(`/api/admin/keys/${keyId}`, { method: "DELETE" });
-    showToast("Da xoa khoa API khoi tour xoay", "success");
+    showToast("Đã xóa khóa API khỏi tour xoay", "success");
     loadAdminKeys();
     loadAdminStats();
   } catch (err) {
-    showToast("Loi khi xoa key: " + err.message, "error");
+    showToast("Lỗi khi xóa key: " + err.message, "error");
   }
 }
 
@@ -186,3 +198,13 @@ function escapeHtml(str) {
     tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
   );
 }
+
+window.loadAdminStats = loadAdminStats;
+window.loadAdminKeys = loadAdminKeys;
+window.loadAdminUsers = loadAdminUsers;
+window.toggleKeyStatus = toggleKeyStatus;
+window.deleteKey = deleteKey;
+
+document.addEventListener("DOMContentLoaded", () => {
+  window.initAdminPage();
+});

@@ -104,6 +104,10 @@ a:hover {
   border-radius: var(--radius-md);
   transition: all var(--transition-fast);
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
 }
 
 .nav-link:hover {
@@ -115,6 +119,11 @@ a:hover {
   color: var(--color-accent);
   background-color: #EFF6FF;
   font-weight: 600;
+}
+
+[data-theme="dark"] .nav-link.active {
+  color: var(--color-accent);
+  background-color: rgba(37, 99, 235, 0.18);
 }
 
 .header-actions {
@@ -419,19 +428,59 @@ a:hover {
   align-items: start;
 }
 
-.dropzone {
-  border: 2px dashed var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: var(--space-xl) var(--space-md);
+.dropzone, .drop-zone {
+  border: 3px dashed #64748B;
+  border-radius: var(--radius-xl);
+  padding: 32px var(--space-lg);
   text-align: center;
-  background-color: var(--color-card);
+  background-color: var(--color-background);
   cursor: pointer;
   transition: all var(--transition-fast);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  outline: none;
+  position: relative;
 }
 
-.dropzone:hover, .dropzone.dragover {
+.dropzone:hover, .dropzone:focus-visible,
+.drop-zone:hover, .drop-zone:focus-visible {
   border-color: var(--color-accent);
-  background-color: #F0F7FF;
+  background-color: rgba(37, 99, 235, 0.05);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.12);
+}
+
+.dropzone.dragover,
+.drop-zone.dragover {
+  border-color: var(--color-accent) !important;
+  border-style: solid !important;
+  background-color: rgba(37, 99, 235, 0.1) !important;
+  transform: scale(1.02);
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.18) !important;
+}
+
+[data-theme="dark"] .dropzone,
+[data-theme="dark"] .drop-zone {
+  border-color: #475569;
+  background-color: #0F172A;
+}
+
+[data-theme="dark"] .dropzone:hover,
+[data-theme="dark"] .dropzone:focus-visible,
+[data-theme="dark"] .drop-zone:hover,
+[data-theme="dark"] .drop-zone:focus-visible {
+  border-color: #60A5FA;
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+[data-theme="dark"] .dropzone.dragover,
+[data-theme="dark"] .drop-zone.dragover {
+  border-color: #60A5FA !important;
+  border-style: solid !important;
+  background-color: rgba(59, 130, 246, 0.15) !important;
 }
 
 .dropzone-title {
@@ -444,6 +493,17 @@ a:hover {
 .dropzone-desc {
   font-size: 13px;
   color: var(--color-muted-foreground);
+}
+
+.file-info-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background-color: var(--color-muted);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  gap: 12px;
 }
 
 .viewer-container {
@@ -561,24 +621,6 @@ a:hover {
 .auth-tab-btn.active {
   color: var(--color-accent);
   border-bottom-color: var(--color-accent);
-}
-
-.demo-account-box {
-  background-color: var(--color-muted);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: var(--space-md);
-  margin-top: var(--space-lg);
-  font-size: 12px;
-}
-
-.demo-account-box h4 {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--color-foreground);
-  margin-bottom: 4px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
 }
 
 /* --- Thong Bao Toast --- */
@@ -715,6 +757,310 @@ a:hover {
     padding: 0 var(--space-md);
   }
   .nav-menu {
-    display: none; /* Co the bo sung mobile menu neu can */
+    display: none;
   }
+}
+
+/* ==========================================================================
+   Thanh Tien Trinh Xu Ly Da Tang (Pipeline Processing Progress)
+   ========================================================================== */
+
+.pipeline-card {
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-lg);
+  box-shadow: var(--shadow-sm);
+  display: none;
+}
+
+.pipeline-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-md);
+}
+
+.pipeline-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-foreground);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.pipeline-status-text {
+  font-size: 12px;
+  color: var(--color-accent);
+  font-weight: 500;
+}
+
+.pipeline-steps {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--space-sm);
+  position: relative;
+  margin-top: var(--space-sm);
+}
+
+.pipeline-step {
+  text-align: center;
+  position: relative;
+}
+
+.pipeline-step-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-muted);
+  border: 2px solid var(--color-border);
+  color: var(--color-muted-foreground);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  transition: all var(--transition-base);
+}
+
+.pipeline-step.active .pipeline-step-dot {
+  background-color: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #FFFFFF;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+.pipeline-step.completed .pipeline-step-dot {
+  background-color: var(--color-success);
+  border-color: var(--color-success);
+  color: #FFFFFF;
+}
+
+.pipeline-step.error .pipeline-step-dot {
+  background-color: var(--color-danger, #DC2626);
+  border-color: var(--color-danger, #DC2626);
+  color: #FFFFFF;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.2);
+}
+
+.pipeline-step.error .pipeline-step-name {
+  color: var(--color-danger, #DC2626);
+  font-weight: 600;
+}
+
+.pipeline-step-name {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-muted-foreground);
+  line-height: 1.25;
+}
+
+.pipeline-step.active .pipeline-step-name {
+  color: var(--color-foreground);
+  font-weight: 600;
+}
+
+.pipeline-bar-wrapper {
+  height: 4px;
+  background-color: var(--color-muted);
+  border-radius: var(--radius-full);
+  margin-top: var(--space-md);
+  overflow: hidden;
+}
+
+.pipeline-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--color-accent), #60A5FA);
+  border-radius: var(--radius-full);
+  transition: width 300ms ease;
+}
+
+/* ==========================================================================
+   Modal Xem Mo Rong Toan Man Hinh (Fullscreen Viewer Modal)
+   ========================================================================== */
+
+.fullscreen-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(11, 15, 23, 0.85);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+
+.fullscreen-dialog {
+  background-color: var(--color-card);
+  width: 95vw;
+  height: 94vh;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: var(--shadow-xl);
+}
+
+.fullscreen-header {
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--color-card);
+}
+
+.fullscreen-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-xl);
+  background-color: var(--color-background);
+  display: flex;
+  justify-content: center;
+}
+
+/* ==========================================================================
+   Tabs Ban Dich Song Ngu & Nut Thao Tac
+   ========================================================================== */
+
+.translation-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 14px;
+  background-color: var(--color-muted);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.translation-tabs {
+  display: inline-flex;
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 2px;
+  gap: 2px;
+}
+
+.tab-btn {
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  border: none;
+  background: transparent;
+  color: var(--color-muted-foreground);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.tab-btn.active {
+  background-color: var(--color-accent);
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+.theme-toggle-btn {
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 6px 10px;
+  cursor: pointer;
+  color: var(--color-foreground);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  transition: all var(--transition-fast);
+}
+
+.theme-toggle-btn:hover {
+  background-color: var(--color-muted);
+}
+
+/* ==========================================================================
+   Trang Cai Dat Ca Nhan Hoa (Settings Page)
+   ========================================================================== */
+
+.settings-grid {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: var(--space-xl);
+  max-width: 1000px;
+  margin: var(--space-xl) auto;
+}
+
+.settings-sidebar {
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+  height: fit-content;
+}
+
+.settings-nav-item {
+  display: block;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-muted-foreground);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  margin-bottom: 4px;
+  transition: all var(--transition-fast);
+}
+
+.settings-nav-item.active,
+.settings-nav-item:hover {
+  background-color: var(--color-muted);
+  color: var(--color-foreground);
+}
+
+.settings-card {
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--space-xl);
+}
+
+.settings-card-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: var(--space-xs);
+}
+
+.settings-card-desc {
+  font-size: 13px;
+  color: var(--color-muted-foreground);
+  margin-bottom: var(--space-lg);
+}
+
+/* Dark mode specific for doc-sheet */
+[data-theme="dark"] .doc-sheet {
+  background-color: #162032;
+  color: #F1F5F9;
+  border-color: #243044;
+}
+
+[data-theme="dark"] .pane-header {
+  background-color: #131B2A;
+}
+
+[data-theme="dark"] .doc-sheet th {
+  background-color: #1E293B;
+  color: #F8FAFC;
+}
+
+[data-theme="dark"] .doc-sheet td,
+[data-theme="dark"] .doc-sheet th {
+  border-color: #334155;
 }

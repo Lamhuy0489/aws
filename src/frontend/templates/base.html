@@ -6,12 +6,20 @@
   <title>{% block title %}Hybrid Document OCR Platform{% endblock %}</title>
   
   <!-- CSS Fonts & Theme -->
-  <link rel="stylesheet" href="/static/css/theme.css?v=20260921_02" />
-  <link rel="stylesheet" href="/static/css/style.css?v=20260921_02" />
+  <link rel="stylesheet" href="/static/css/theme.css?v=20260921_10" />
+  <link rel="stylesheet" href="/static/css/style.css?v=20260921_10" />
 
-  
-  <!-- Marked.js cho hien thi Markdown tren trinh duyet -->
+  <!-- Script chong nhay sang (FOUC) -->
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem("app-theme") || "light";
+      document.documentElement.setAttribute("data-theme", savedTheme);
+    })();
+  </script>
+
+  <!-- Marked.js & 2D Vector Icons -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="/static/js/icons.js?v=20260921_10"></script>
 
   {% block head %}{% endblock %}
 </head>
@@ -27,15 +35,22 @@
 
         {% if user %}
         <nav class="nav-menu">
-          <a href="/studio" class="nav-link {% if active_page == 'studio' %}active{% endif %}" data-i18n="nav_studio">
-            Studio Bóc Tách
+          <a href="/studio" class="nav-link {% if active_page == 'studio' %}active{% endif %}">
+            <span data-icon="layers" data-icon-size="16"></span>
+            <span data-i18n="nav_studio">Studio Bóc Tách</span>
           </a>
-          <a href="/library" class="nav-link {% if active_page == 'library' %}active{% endif %}" data-i18n="nav_library">
-            Kho Tài Liệu
+          <a href="/library" class="nav-link {% if active_page == 'library' %}active{% endif %}">
+            <span data-icon="folder" data-icon-size="16"></span>
+            <span data-i18n="nav_library">Kho Tài Liệu</span>
+          </a>
+          <a href="/settings" class="nav-link {% if active_page == 'settings' %}active{% endif %}">
+            <span data-icon="sliders" data-icon-size="16"></span>
+            <span data-i18n="nav_settings">Cài Đặt</span>
           </a>
           {% if user.role == 'admin' %}
-          <a href="/admin" class="nav-link {% if active_page == 'admin' %}active{% endif %}" data-i18n="nav_admin">
-            Quản Trị Hệ Thống
+          <a href="/admin" class="nav-link {% if active_page == 'admin' %}active{% endif %}">
+            <span data-icon="shield" data-icon-size="16"></span>
+            <span data-i18n="nav_admin">Quản Trị Hệ Thống</span>
           </a>
           {% endif %}
         </nav>
@@ -43,19 +58,23 @@
       </div>
 
       <div class="header-actions">
+        <!-- Nut chuyen doi Sáng / Tối (Dark / Light Mode) -->
+        <button id="themeToggleBtn" class="theme-toggle-btn" title="Chuyển chế độ Sáng/Tối"></button>
+
         <!-- Nut chuyen doi Ngon ngu -->
         <button id="langSwitcherBtn" class="lang-btn" title="Chuyển đổi ngôn ngữ / Switch language">VI</button>
 
         {% if user %}
         <!-- User Profile Pill -->
-        <div class="user-profile-pill">
-          <span class="role-tag {% if user.role == 'admin' %}admin{% else %}user{% endif %}">
-            {{ user.role | upper }}
-          </span>
-          <strong>{{ user.username }}</strong>
+        <div class="user-profile-pill" style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background-color: var(--color-muted); border: 1px solid var(--color-border); border-radius: 9999px;">
+          <span data-icon="user" data-icon-size="14" style="color: var(--color-accent);"></span>
+          <strong style="font-size: 13px;">{{ user.username }}</strong>
         </div>
 
-        <a href="/logout" class="btn btn-outline btn-sm" data-i18n="nav_logout">Đăng Xuất</a>
+        <a href="/logout" class="btn btn-outline btn-sm" style="display: inline-flex; align-items: center; gap: 6px;">
+          <span data-icon="logOut" data-icon-size="14"></span>
+          <span data-i18n="nav_logout">Đăng Xuất</span>
+        </a>
         {% else %}
         <a href="/login" class="btn btn-primary btn-sm" data-i18n="tab_login">Đăng Nhập</a>
         {% endif %}
@@ -84,8 +103,36 @@
   </footer>
 
   <!-- Scripts Dung Chung -->
-  <script src="/static/js/i18n.js?v=20260921_02"></script>
-  <script src="/static/js/api.js?v=20260921_02"></script>
+  <script src="/static/js/i18n.js?v=20260921_04"></script>
+  <script src="/static/js/api.js?v=20260921_04"></script>
+  <script src="/static/js/spa_router.js?v=20260922_01"></script>
+
+  <script>
+    // Logic khoi tao Theme Toggle Button voi 2D Vector Icons
+    (function() {
+      const btn = document.getElementById("themeToggleBtn");
+      if (!btn) return;
+
+      function updateThemeBtn(theme) {
+        const isDark = theme === "dark";
+        const iconSvg = isDark ? AppIcons.get("sun", 16) : AppIcons.get("moon", 16);
+        const label = isDark ? "Sáng" : "Tối";
+        btn.innerHTML = `${iconSvg} <span>${label}</span>`;
+      }
+
+      const currentTheme = document.documentElement.getAttribute("data-theme") || "light";
+      updateThemeBtn(currentTheme);
+
+      btn.addEventListener("click", () => {
+        const active = document.documentElement.getAttribute("data-theme") || "light";
+        const next = active === "dark" ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", next);
+        localStorage.setItem("app-theme", next);
+        updateThemeBtn(next);
+      });
+    })();
+  </script>
+
   {% block scripts %}{% endblock %}
 
 </body>

@@ -27,23 +27,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Quick fill demo credentials
-  const fillAdminBtn = document.getElementById("fillAdminBtn");
-  if (fillAdminBtn) {
-    fillAdminBtn.addEventListener("click", () => {
-      document.getElementById("loginUsername").value = "admin";
-      document.getElementById("loginPassword").value = "Admin@123";
-    });
-  }
-
-  const fillDemoBtn = document.getElementById("fillDemoBtn");
-  if (fillDemoBtn) {
-    fillDemoBtn.addEventListener("click", () => {
-      document.getElementById("loginUsername").value = "demo";
-      document.getElementById("loginPassword").value = "Demo@123";
-    });
-  }
-
   // Handle Login Submit
   if (formLogin) {
     formLogin.addEventListener("submit", async (e) => {

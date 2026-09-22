@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS documents (
     language TEXT DEFAULT 'vi',
     status TEXT DEFAULT 'COMPLETED',
     full_markdown TEXT NOT NULL,
+    translated_markdown TEXT,
     processing_time REAL DEFAULT 0.0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -39,4 +40,16 @@ CREATE TABLE IF NOT EXISTS api_keys (
     usage_count INTEGER DEFAULT 0,   -- Số lượt đã gọi để xoay tour
     last_used_at TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Bảng lưu trữ cấu hình cá nhân của từng tài khoản
+CREATE TABLE IF NOT EXISTS user_settings (
+    user_id TEXT PRIMARY KEY,
+    theme TEXT DEFAULT 'light',             -- 'light' hoặc 'dark'
+    language TEXT DEFAULT 'vi',            -- 'vi' hoặc 'en'
+    default_model TEXT DEFAULT 'auto',     -- 'auto', 'gemini-3.6-flash', 'kaggle', 'groq'
+    default_target_lang TEXT DEFAULT 'vi', -- Ngôn ngữ dịch đích mặc định
+    fast_path_default INTEGER DEFAULT 1,   -- 1: Bật Fast-Path, 0: Ép OCR
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
 );

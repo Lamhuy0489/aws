@@ -71,3 +71,45 @@
   --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+/* ==========================================================================
+   Dark Mode Theme Tokens - Tuong phan cao, chuyen nghiep, khong gay moi mat
+   ========================================================================== */
+[data-theme="dark"] {
+  --color-primary: #F8FAFC;
+  --color-on-primary: #0F172A;
+  --color-secondary: #94A3B8;
+  --color-on-secondary: #0F172A;
+  --color-accent: #3B82F6;
+  --color-accent-hover: #60A5FA;
+  --color-on-accent: #FFFFFF;
+
+  --color-background: #0B0F17;
+  --color-foreground: #F1F5F9;
+  --color-card: #131B2A;
+  --color-card-foreground: #F1F5F9;
+
+  --color-muted: #1E293B;
+  --color-muted-foreground: #94A3B8;
+  --color-border: #243044;
+  --color-border-subtle: #192334;
+
+  --color-destructive: #EF4444;
+  --color-destructive-hover: #DC2626;
+  --color-on-destructive: #FFFFFF;
+
+  --color-success: #10B981;
+  --color-success-bg: #064E3B;
+  --color-success-border: #047857;
+
+  --color-warning: #F59E0B;
+  --color-warning-bg: #78350F;
+  --color-warning-border: #B45309;
+
+  --color-ring: #3B82F6;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.7), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+}

@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}Cài Đặt Tài Khoản | Hybrid Document OCR Platform{% endblock %}
+
+{% block content %}
+<div class="content-container" style="max-width: 960px; margin: 0 auto; padding: var(--space-xl) var(--space-md);">
+  <div style="margin-bottom: var(--space-xl);">
+    <h1 style="font-size: 24px; font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 8px;">
+      <span data-icon="sliders" data-icon-size="24" style="color: var(--color-accent);"></span>
+      <span>Cài Đặt Tài Khoản & Tùy Chọn Hệ Thống</span>
+    </h1>
+    <p style="font-size: 14px; color: var(--color-muted-foreground);">
+      Quản lý thông tin tài khoản, tùy chọn cá nhân hóa giao diện và cấu hình xử lý tài liệu mặc định.
+    </p>
+  </div>
+
+  <div class="settings-grid" style="display: grid; grid-template-columns: 1fr; gap: var(--space-xl);">
+    
+    <!-- 1. Thong Tin Tai Khoan -->
+    <div class="settings-card">
+      <div class="settings-card-title" style="display: flex; align-items: center; gap: 8px;">
+        <span data-icon="user" data-icon-size="18" style="color: var(--color-accent);"></span>
+        <span>Thông Tin Cá Nhân</span>
+      </div>
+      <div class="settings-card-desc">Thông tin định danh của tài khoản trên hệ thống.</div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-md);">
+        <div class="form-group">
+          <label class="form-label">Tên Đăng Nhập</label>
+          <input type="text" class="form-input" value="{{ user.username }}" disabled style="background-color: var(--color-muted);" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Địa Chỉ Email</label>
+          <input type="text" class="form-input" value="{{ user.email }}" disabled style="background-color: var(--color-muted);" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tình Trạng Tài Khoản</label>
+          <div style="padding-top: 6px;">
+            <span class="badge badge-success" style="font-size: 12px; display: inline-flex; align-items: center; gap: 4px;">
+              <span data-icon="check" data-icon-size="12"></span>
+              <span>Đang Hoạt Động (Kích Hoạt Đầy Đủ)</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Tuy Chon Ca Nhan Hoa He Thong -->
+    <div class="settings-card">
+      <div class="settings-card-title" style="display: flex; align-items: center; gap: 8px;">
+        <span data-icon="settings" data-icon-size="18" style="color: var(--color-accent);"></span>
+        <span>Tùy Chọn Cá Nhân Hóa & Xử Lý</span>
+      </div>
+      <div class="settings-card-desc">Cấu hình sở thích làm việc và các giá trị mặc định khi bóc tách tài liệu.</div>
+
+      <form id="preferencesForm">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-lg);">
+          
+          <div class="form-group">
+            <label class="form-label" for="settingTheme">Giao Diện Mặc Định</label>
+            <select id="settingTheme" class="form-select">
+              <option value="light" {% if settings.theme == 'light' %}selected{% endif %}>Sáng (Light Mode - Mặc định)</option>
+              <option value="dark" {% if settings.theme == 'dark' %}selected{% endif %}>Tối (Dark Mode)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="settingLanguage">Ngôn Ngữ Giao Diện Mặc Định</label>
+            <select id="settingLanguage" class="form-select">
+              <option value="vi" {% if settings.language == 'vi' %}selected{% endif %}>Tiếng Việt (Mặc định)</option>
+              <option value="en" {% if settings.language == 'en' %}selected{% endif %}>English</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="settingDefaultModel">Mô Hình OCR Mặc Định</label>
+            <select id="settingDefaultModel" class="form-select">
+              <option value="auto" {% if settings.default_model == 'auto' %}selected{% endif %}>Tự Động (Fast-Path + Tour Xoay Siêu Tốc)</option>
+              <option value="gemini-flash-lite-latest" {% if settings.default_model == 'gemini-flash-lite-latest' %}selected{% endif %}>Google Gemini Flash Lite (Siêu Tốc - Đề Xuất)</option>
+              <option value="gemini-3.6-flash" {% if settings.default_model == 'gemini-3.6-flash' %}selected{% endif %}>Google Gemini 3.6 Flash (Chính Thức)</option>
+              <option value="kaggle" {% if settings.default_model == 'kaggle' %}selected{% endif %}>Kaggle TPU Qwen2.5-VL</option>
+              <option value="groq" {% if settings.default_model == 'groq' %}selected{% endif %}>Groq LLaMA 3.2 Vision</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="settingTargetLang">Ngôn Ngữ Dịch Thuật Mặc Định</label>
+            <select id="settingTargetLang" class="form-select">
+              <option value="en" {% if settings.default_target_lang == 'en' %}selected{% endif %}>Dịch sang English (Tiếng Anh)</option>
+              <option value="vi" {% if settings.default_target_lang == 'vi' %}selected{% endif %}>Dịch sang Tiếng Việt</option>
+              <option value="ja" {% if settings.default_target_lang == 'ja' %}selected{% endif %}>Dịch sang Tiếng Nhật</option>
+              <option value="zh" {% if settings.default_target_lang == 'zh' %}selected{% endif %}>Dịch sang Tiếng Trung</option>
+            </select>
+          </div>
+
+        </div>
+
+        <div style="margin-top: var(--space-md); padding: 12px; background-color: var(--color-muted); border-radius: var(--radius-md);">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px;">
+            <input type="checkbox" id="settingFastPath" {% if settings.fast_path_default == 1 %}checked{% endif %} />
+            <strong>Ưu tiên Fast-Path siêu tốc (Khuyến nghị bật để xử lý tài liệu trong 1-2s)</strong>
+          </label>
+          <div style="font-size: 12px; color: var(--color-muted-foreground); margin-left: 22px; margin-top: 2px;">
+            Tự động bóc tách kỹ thuật số tức thì cho tài liệu có sẵn văn bản, chỉ kích hoạt AI Vision OCR khi gặp trang quét.
+          </div>
+        </div>
+
+        <div style="margin-top: var(--space-lg); display: flex; justify-content: flex-end;">
+          <button type="submit" class="btn btn-primary" id="btnSavePreferences" style="display: inline-flex; align-items: center; gap: 6px;">
+            <span data-icon="check" data-icon-size="14"></span>
+            <span>Lưu Tùy Chọn Cài Đặt</span>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- 3. Doi Mat Khau -->
+    <div class="settings-card">
+      <div class="settings-card-title" style="display: flex; align-items: center; gap: 8px;">
+        <span data-icon="key" data-icon-size="18" style="color: var(--color-accent);"></span>
+        <span>Đổi Mật Khẩu Bảo Mật</span>
+      </div>
+      <div class="settings-card-desc">Cập nhật mật khẩu định kỳ để bảo vệ tài khoản và kho tài liệu cá nhân.</div>
+
+      <form id="passwordForm" style="max-width: 480px;">
+        <div class="form-group">
+          <label class="form-label" for="oldPassword">Mật Khẩu Hiện Tại</label>
+          <input type="password" id="oldPassword" class="form-input" required placeholder="Nhập mật khẩu đang dùng" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="newPassword">Mật Khẩu Mới</label>
+          <input type="password" id="newPassword" class="form-input" required minlength="6" placeholder="Tối thiểu 6 ký tự" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="confirmPassword">Xác Nhận Mật Khẩu Mới</label>
+          <input type="password" id="confirmPassword" class="form-input" required minlength="6" placeholder="Nhập lại mật khẩu mới" />
+        </div>
+
+        <div style="margin-top: var(--space-lg);">
+          <button type="submit" class="btn btn-outline" id="btnChangePassword" style="display: inline-flex; align-items: center; gap: 6px;">
+            <span data-icon="key" data-icon-size="14"></span>
+            <span>Cập Nhật Mật Khẩu</span>
+          </button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/settings.js?v=20260922_03"></script>
+{% endblock %}

@@ -13,6 +13,7 @@ from src.frontend.blueprints.auth import auth_bp
 from src.frontend.blueprints.studio import studio_bp
 from src.frontend.blueprints.library import library_bp
 from src.frontend.blueprints.admin import admin_bp
+from src.frontend.blueprints.settings import settings_bp
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
@@ -121,6 +122,7 @@ app.register_blueprint(auth_bp)
 app.register_blueprint(studio_bp)
 app.register_blueprint(library_bp)
 app.register_blueprint(admin_bp)
+app.register_blueprint(settings_bp)
 
 @app.route("/")
 def index_redirect():

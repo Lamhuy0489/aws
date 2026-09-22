@@ -63,6 +63,16 @@ def init_db():
             keys_data
         )
 
+    # Đảm bảo bảng documents có cột translated_markdown
+    try:
+        cursor.execute("SELECT translated_markdown FROM documents LIMIT 1")
+    except sqlite3.OperationalError:
+        try:
+            cursor.execute("ALTER TABLE documents ADD COLUMN translated_markdown TEXT")
+            logger.info("Đã bổ sung cột translated_markdown vào bảng documents.")
+        except Exception as e:
+            logger.warning(f"Không thể thêm cột translated_markdown: {e}")
+
     conn.commit()
     conn.close()
     logger.info(f"Khởi tạo CSDL SQLite hoàn tất tại: {DB_PATH}")
@@ -153,6 +163,18 @@ def get_document_by_id(doc_id: str, user_id: Optional[str] = None) -> Optional[d
 def delete_document(doc_id: str, user_id: str) -> bool:
     conn = get_db_connection()
     cursor = conn.execute("DELETE FROM documents WHERE id = ? AND user_id = ?", (doc_id, user_id))
+    conn.commit()
+    affected = cursor.rowcount
+    conn.close()
+    return affected > 0
+
+def update_document_translation(doc_id: str, user_id: str, translated_markdown: str) -> bool:
+    """Cập nhật nội dung bản dịch Markdown của tài liệu vào CSDL."""
+    conn = get_db_connection()
+    cursor = conn.execute(
+        "UPDATE documents SET translated_markdown = ? WHERE id = ? AND user_id = ?",
+        (translated_markdown, doc_id, user_id)
+    )
     conn.commit()
     affected = cursor.rowcount
     conn.close()
@@ -254,4 +276,62 @@ def get_admin_system_stats() -> dict:
         "total_key_usage": total_usage,
         "recent_activity": [dict(r) for r in recent_docs]
     }
+
+# --- Cac ham quan ly cau hinh ca nhan hoa nguoi dung (User Settings) ---
+
+def get_user_settings(user_id: str) -> dict:
+    """Lay cau hinh ca nhan cua nguoi dung, neu chua co se tu dong tao mac dinh."""
+    conn = get_db_connection()
+    row = conn.execute("SELECT * FROM user_settings WHERE user_id = ?", (user_id,)).fetchone()
+    if not row:
+        conn.execute(
+            """INSERT OR IGNORE INTO user_settings 
+               (user_id, theme, language, default_model, default_target_lang, fast_path_default)
+               VALUES (?, 'light', 'vi', 'auto', 'vi', 1)""",
+            (user_id,)
+        )
+        conn.commit()
+        row = conn.execute("SELECT * FROM user_settings WHERE user_id = ?", (user_id,)).fetchone()
+    conn.close()
+    return dict(row) if row else {
+        "user_id": user_id,
+        "theme": "light",
+        "language": "vi",
+        "default_model": "auto",
+        "default_target_lang": "vi",
+        "fast_path_default": 1
+    }
+
+def update_user_settings(user_id: str, settings: dict) -> dict:
+    """Cap nhat cau hinh ca nhan cua nguoi dung."""
+    conn = get_db_connection()
+    # Dam bao da co ban ghi
+    get_user_settings(user_id)
+
+    theme = settings.get("theme", "light")
+    language = settings.get("language", "vi")
+    default_model = settings.get("default_model", "auto")
+    default_target_lang = settings.get("default_target_lang", "vi")
+    fast_path_default = 1 if settings.get("fast_path_default", True) else 0
+
+    conn.execute(
+        """UPDATE user_settings 
+           SET theme = ?, language = ?, default_model = ?, default_target_lang = ?, 
+               fast_path_default = ?, updated_at = CURRENT_TIMESTAMP
+           WHERE user_id = ?""",
+        (theme, language, default_model, default_target_lang, fast_path_default, user_id)
+    )
+    conn.commit()
+    conn.close()
+    return get_user_settings(user_id)
+
+def update_user_password(user_id: str, new_password_hash: str) -> bool:
+    """Cap nhat mat khau moi da ma hoa cho nguoi dung."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE users SET password_hash = ? WHERE id = ?", (new_password_hash, user_id))
+    conn.commit()
+    success = cursor.rowcount > 0
+    conn.close()
+    return success
 
