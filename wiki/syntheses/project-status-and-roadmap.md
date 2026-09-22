@@ -48,15 +48,15 @@
 - [x] Co che S3 Presigned URL giai quyet gioi han 10MB cua API Gateway
 - [x] Bien soan Worklog Tuan 9 song ngu tren Hugo website va day len GitHub
 
-### Tuan 10: Trien khai Ha tang Dam may AWS (Dang tien hanh)
+### Tuan 10: Trien khai Ha tang Dam may AWS (HOAN THANH 100%)
 - [x] Soan thao huong dan thiet lap bang tay tung buoc tren AWS Console
 - [x] Cap nhat Proposal va Worklog Tuan 10 tren Hugo website va day len GitHub
-- [ ] Tao Amazon S3 Bucket: huylam-ocr-documents-ap-southeast-1 (uploads/, outputs/, CORS)
-- [ ] Tao Amazon DynamoDB Table: document_processing_jobs (PK: job_id, SK: created_at, On-Demand)
-- [ ] Tao AWS Systems Manager Parameter: /huylam-ocr/config (SecureString KMS)
-- [ ] (Tuy chon) Yeu cau mo quyen Amazon Bedrock model (Nova / Claude 3.5 Haiku)
-- [ ] Ket noi code Python Boto3 voi S3, DynamoDB, SSM
-- [ ] Thu thap anh minh chung AWS Console co vien do dinh danh huylam (677994024390)
+- [x] Tao Amazon S3 Bucket: huylam-ocr-documents-ap-southeast-1 (uploads/, outputs/, CORS)
+- [x] Tao Amazon DynamoDB Table: document_processing_jobs (PK: job_id, SK: created_at, On-Demand)
+- [x] Tao AWS Systems Manager Parameter: /huylam-ocr/config (SecureString KMS)
+- [x] (Tuy chon) Do kiem co che Amazon Bedrock Model Access & Chinh sach tai khoan
+- [x] Ket noi code Python Boto3 voi S3, DynamoDB, SSM (Da do kiem thanh cong 100%)
+- [x] Thu thap 9 anh minh chung AWS Console co vien do dinh danh huylam (677994024390)
 
 ### Tuan 11: Tich hop Dam may & Do kiem Hieu nang (Du kien)
 - [ ] Tich hop tu dong hoa luong xu ly qua S3 Event Notification hoac ECS Fargate

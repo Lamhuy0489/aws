@@ -37,20 +37,34 @@ class AppSettings(BaseModel):
         description="Vùng AWS mặc định"
     )
     s3_bucket: str = Field(
-        default="hybrid-ocr-documents",
+        default="huylam-ocr-documents-ap-southeast-1",
         description="Tên bucket S3 lưu trữ tài liệu"
     )
     dynamodb_table: str = Field(
         default="document_processing_jobs",
         description="Tên bảng DynamoDB lưu trữ tiến trình"
     )
+    aws_native_mode_enabled: bool = Field(
+        default=False,
+        description="Bật chế độ khép kín với mô hình AWS Native Foundation Models (Amazon Nova / Bedrock)"
+    )
+    aws_bedrock_model: str = Field(
+        default="amazon.nova-micro-v1:0",
+        description="Mã định danh mô hình Bedrock (Amazon Nova Micro hoặc Claude 3.5 Haiku)"
+    )
+    ssm_parameter_name: str = Field(
+        default="/huylam-ocr/config",
+        description="Đường dẫn tham số cấu hình trên AWS SSM Parameter Store"
+    )
     timeout_seconds: int = Field(
         default=120,
         description="Thời gian chờ tối đa cho các cuộc gọi API ngoại vi"
     )
 
-def load_settings_from_ssm(parameter_name: str = "/hybrid_ocr/config", region: str = "ap-southeast-1") -> Optional[dict]:
+def load_settings_from_ssm(parameter_name: Optional[str] = None, region: str = "ap-southeast-1") -> Optional[dict]:
     """Tải chuỗi cấu hình JSON từ AWS Systems Manager Parameter Store."""
+    if parameter_name is None:
+        parameter_name = os.getenv("SSM_PARAMETER_NAME", "/huylam-ocr/config")
     try:
         import boto3
         ssm = boto3.client("ssm", region_name=region)
@@ -86,13 +100,16 @@ def get_settings() -> AppSettings:
         "AWS_REGION": "aws_region",
         "S3_BUCKET": "s3_bucket",
         "DYNAMODB_TABLE": "dynamodb_table",
+        "AWS_NATIVE_MODE_ENABLED": "aws_native_mode_enabled",
+        "AWS_BEDROCK_MODEL": "aws_bedrock_model",
+        "SSM_PARAMETER_NAME": "ssm_parameter_name",
         "TIMEOUT_SECONDS": "timeout_seconds"
     }
     
     for env_k, cfg_k in env_mappings.items():
         val = os.getenv(env_k)
         if val is not None:
-            if cfg_k == "fast_path_enabled":
+            if cfg_k in ("fast_path_enabled", "aws_native_mode_enabled"):
                 config_dict[cfg_k] = val.lower() in ("true", "1", "yes")
             elif cfg_k in ("scan_threshold_chars", "timeout_seconds"):
                 config_dict[cfg_k] = int(val)

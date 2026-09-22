@@ -19,10 +19,58 @@ class DocumentTranslator:
     """Module dịch thuật tài liệu chuyên nghiệp đa ngữ sử dụng Gemini AI bảo toàn cấu trúc Markdown."""
 
     @classmethod
+    def translate_with_bedrock(
+        cls,
+        markdown_text: str,
+        target_lang: str = "en",
+        model_id: Optional[str] = None
+    ) -> str:
+        """Dịch nội dung Markdown sử dụng mô hình khép kín Amazon Bedrock (Amazon Nova Micro/Lite hoặc Claude)."""
+        if not markdown_text or not markdown_text.strip():
+            return ""
+        from src.backend.cloud.aws_storage import AWSStorageService
+        aws_svc = AWSStorageService()
+        target_lang_name = LANG_MAP.get(target_lang.lower(), target_lang)
+
+        system_instruction = (
+            f"Bạn là chuyên gia dịch thuật tài liệu kỹ thuật cao cấp trên nền tảng AWS.\n"
+            f"Nhiệm vụ: Dịch toàn bộ văn bản sau sang {target_lang_name}.\n"
+            f"NGUYÊN TẮC BẮT BUỘC:\n"
+            f"1. Bảo toàn 100% cấu trúc Markdown (tiêu đề, danh sách, khối mã, chú thích <!-- Trang X -->, bảng biểu | ... |).\n"
+            f"2. Không thay đổi số liệu, thông số kỹ thuật hay mã định danh.\n"
+            f"3. Dịch văn phong tự nhiên, chuẩn xác kỹ thuật.\n"
+            f"4. Tuyệt đối không thêm emoji, lời dẫn hay giải thích mở đầu/kết thúc. Chỉ trả về nội dung Markdown đã dịch."
+        )
+
+        pages = [p for p in markdown_text.split("\n\n---\n\n") if p.strip()]
+        if len(pages) > 1:
+            translated_pages = []
+            for page in pages:
+                res = aws_svc.invoke_bedrock_converse(
+                    prompt=page,
+                    system_instruction=system_instruction,
+                    model_id=model_id
+                )
+                translated_pages.append(res or page)
+            return "\n\n---\n\n".join(translated_pages)
+        else:
+            res = aws_svc.invoke_bedrock_converse(
+                prompt=markdown_text,
+                system_instruction=system_instruction,
+                model_id=model_id
+            )
+            return res or markdown_text
+
+    @classmethod
     def translate_markdown(cls, markdown_text: str, target_lang: str = "en", api_key: Optional[str] = None, model_name: str = "gemini-flash-lite-latest") -> str:
         """Dịch nội dung văn bản Markdown sang ngôn ngữ đích (tự động chia trang nếu tài liệu lớn để tránh quá tải)."""
         if not markdown_text or not markdown_text.strip():
             return ""
+
+        # Nếu người dùng chọn mô hình AWS Native Bedrock
+        if model_name.startswith("amazon.") or model_name.startswith("anthropic.") or model_name in ["bedrock-nova", "bedrock-claude"]:
+            actual_model = "amazon.nova-micro-v1:0" if "nova" in model_name else "anthropic.claude-3-5-haiku-20241022-v1:0"
+            return cls.translate_with_bedrock(markdown_text, target_lang, model_id=actual_model)
 
         # Lấy API Key từ Tour Xoay nếu không được truyền vào
         active_key_id = None

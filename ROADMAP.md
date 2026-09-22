@@ -62,26 +62,37 @@ Tài liệu này là nguồn sự thật duy nhất (Single Source of Truth) đ�
 - [x] Thiết kế giải pháp cấp phát S3 Presigned URL khắc phục triệt để giới hạn 10 MB payload của API Gateway.
 - [x] Biên soạn tài liệu Worklog Tuần 9 song ngữ trên website Hugo (`workshop/content/1-Worklog/1.9-Week9/`) và đẩy lên GitHub.
 
-### Giai đoạn 4: Triển khai Hạ tầng Đám mây AWS (Tuần 10) [ĐANG TRIỂN KHAI]
+### Giai đoạn 4: Triển khai Hạ tầng Đám mây AWS (Tuần 10) [HOÀN THÀNH 100%]
 - [x] Soạn thảo hướng dẫn thiết lập bằng tay từng bước (Manual Step-by-Step Setup Guide) trên AWS Management Console.
 - [x] Cập nhật Đề xuất dự án Proposal bám sát tính năng OCR, Dịch thuật và tùy chọn mở rộng AWS Native AI.
 - [x] Biên soạn Worklog Tuần 10 song ngữ trên website Hugo và đồng bộ lên GitHub `workshop`.
-- [ ] **Thao tác 1**: Tạo kho lưu trữ Amazon S3 Bucket `huylam-ocr-documents-ap-southeast-1` trên Region `ap-southeast-1`:
-  - [ ] Bật Block all public access.
-  - [ ] Tạo thư mục `uploads/` (nhận tệp gốc).
-  - [ ] Tạo thư mục `outputs/` (lưu kết quả MD, DOCX, PDF).
-  - [ ] Cấu hình chính sách CORS cho phép các phương thức `GET`, `PUT`, `POST`, `HEAD`.
-- [ ] **Thao tác 2**: Tạo bảng cơ sở dữ liệu Amazon DynamoDB `document_processing_jobs` trên Region `ap-southeast-1`:
-  - [ ] Partition Key: `job_id` (String).
-  - [ ] Sort Key: `created_at` (String).
-  - [ ] Capacity Mode: On-Demand (`PAY_PER_REQUEST`).
-- [ ] **Thao tác 3**: Tạo tham số bảo mật trên AWS Systems Manager Parameter Store:
-  - [ ] Name: `/huylam-ocr/config`.
-  - [ ] Type: `SecureString` (KMS Key: `alias/aws/ssm`).
-  - [ ] Value: Cấu hình JSON chứa `ocr_mode`, `scan_threshold_chars`, `kaggle_endpoint`, `gemini_api_key`, `aws_native_mode_enabled: false`.
-- [ ] **Thao tác 4 (Tùy chọn)**: Yêu cầu cấp quyền mô hình trên Amazon Bedrock (Nova Micro / Claude 3.5 Haiku) tại `us-east-1` hoặc `ap-southeast-1`.
-- [ ] **Thao tác 5**: Cập nhật mã nguồn Python tích hợp AWS SDK Boto3 để đọc/ghi trực tiếp tới S3, DynamoDB và SSM Parameter Store.
-- [ ] **Thao tác 6**: Thu thập ảnh minh chứng AWS Console có viền đỏ bao quanh Account Badge `huylam (677994024390)`.
+- [x] **Thao tác 1**: Thiết lập kho lưu trữ Amazon S3 Bucket `huylam-ocr-documents-ap-southeast-1` trên Region `ap-southeast-1`:
+  - [x] Đã tạo S3 Bucket `huylam-ocr-documents-ap-southeast-1` (Block all public access = ON).
+  - [x] Đã tạo thư mục `uploads/` (nhận tệp gốc).
+  - [x] Đã tạo thư mục `outputs/` (lưu kết quả MD, DOCX, PDF).
+  - [x] Đã cấu hình chính sách CORS cho phép các phương thức `GET`, `PUT`, `POST`, `HEAD`.
+- [x] **Thao tác 2**: Tạo bảng cơ sở dữ liệu Amazon DynamoDB `document_processing_jobs` trên Region `ap-southeast-1`:
+  - [x] Partition Key: `job_id` (String).
+  - [x] Sort Key: `created_at` (String).
+  - [x] Capacity Mode: On-Demand (`PAY_PER_REQUEST`).
+  - [x] Bảng ở trạng thái Active (ARN: `arn:aws:dynamodb:ap-southeast-1:677994024390:table/document_processing_jobs`).
+- [x] **Thao tác 3**: Tạo tham số bảo mật trên AWS Systems Manager Parameter Store:
+  - [x] Name: `/huylam-ocr/config`.
+  - [x] Type: `SecureString` (KMS Key: `alias/aws/ssm`).
+  - [x] Value: Cấu hình JSON chứa `ocr_mode`, `scan_threshold_chars`, `kaggle_endpoint`, `gemini_api_key`, `aws_native_mode_enabled: false`.
+  - [x] ARN: `arn:aws:ssm:ap-southeast-1:677994024390:parameter/huylam-ocr/config`.
+- [x] **Thao tác 4 (Tùy chọn)**: Đo kiểm cơ chế Amazon Bedrock Model Access & Phân tích chính sách tài khoản:
+  - [x] Kiểm tra danh mục mô hình nội bộ AWS (Amazon Nova Micro/Lite/Pro) trong Model Catalog.
+  - [x] Đo kiểm thực tế trong Playground và ghi nhận chính sách hạn chế Runtime (`ValidationException: Operation not allowed`) của AWS đối với tài khoản mới/Free Tier.
+  - [x] Thu thập ảnh chụp màn hình chi tiết Nova Micro và ảnh lỗi Playground làm minh chứng kỹ thuật cho báo cáo thực tập.
+- [x] **Thao tác 5**: Cập nhật mã nguồn Python tích hợp AWS SDK Boto3 để đọc/ghi trực tiếp tới S3, DynamoDB và SSM Parameter Store:
+  - [x] Đã đo kiểm xác thực danh tính `dev_admin` trên tài khoản `677994024390`.
+  - [x] Đã tự tay chạy script Boto3 đọc và giải mã thành công cấu hình JSON từ SSM Parameter Store `/huylam-ocr/config`.
+  - [x] Đã tự tay chạy script Boto3 ghi và đọc tệp thử nghiệm trên S3 Bucket `huylam-ocr-documents-ap-southeast-1`.
+  - [x] Đã tự tay chạy script Boto3 ghi và đọc bản ghi tiến trình (`job-manual-test-01`) trên bảng DynamoDB `document_processing_jobs`.
+- [x] **Thao tác 6**: Thu thập ảnh minh chứng AWS Console có viền đỏ bao quanh Account Badge `huylam (677994024390)`:
+  - [x] Đã hoàn thành thu thập và đóng khung đỏ cho toàn bộ 9 ảnh minh chứng thực tế trên AWS Console.
+  - [x] Nhúng toàn bộ 9 ảnh minh chứng vào Worklog Tuần 10 song ngữ và biên dịch Hugo 215 trang không lỗi.
 
 ### Giai đoạn 5: Tích hợp Đám mây Đầu - Cuối & Đo kiểm Hiệu năng (Tuần 11) [DỰ KIẾN]
 - [ ] Cấu hình cơ chế tự động hóa: S3 Event Notification kích hoạt Lambda hoặc đóng gói triển khai Docker Web Studio lên ECS Fargate.

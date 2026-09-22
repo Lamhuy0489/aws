@@ -137,6 +137,40 @@ def api_process():
 
         final_doc_id = (created_doc and created_doc.get("id")) or result.document_id
 
+        # Đồng bộ lưu trữ lên AWS Cloud (S3 và DynamoDB) nếu có kết nối
+        try:
+            from src.backend.cloud.aws_storage import AWSStorageService
+            aws_svc = AWSStorageService()
+            if aws_svc.is_connected:
+                s3_in_key = f"uploads/{final_doc_id}/{result.filename}"
+                s3_in_uri = aws_svc.upload_file(
+                    file_bytes,
+                    s3_in_key,
+                    content_type="application/pdf" if result.filename.lower().endswith(".pdf") else "image/png"
+                )
+                s3_out_key = f"outputs/{final_doc_id}/{result.filename}.md"
+                s3_out_uri = aws_svc.upload_file(
+                    result.full_markdown.encode("utf-8"),
+                    s3_out_key,
+                    content_type="text/markdown"
+                )
+                aws_svc.record_job(
+                    job_id=final_doc_id,
+                    filename=result.filename,
+                    user_id=user["id"],
+                    username=user.get("username", "anonymous"),
+                    status="COMPLETED",
+                    total_pages=result.total_pages,
+                    digital_pages=result.digital_pages_count,
+                    scanned_pages=result.scanned_pages_count,
+                    processing_time_seconds=result.processing_time_seconds,
+                    s3_input_uri=s3_in_uri or "",
+                    s3_output_md_uri=s3_out_uri or "",
+                    model_used=model_choice if model_choice != "auto" else ("Fast-Path + " + mode)
+                )
+        except Exception as aws_sync_err:
+            logger.info(f"Lưu trữ AWS Cloud được bỏ qua hoặc ghi nhận nhẹ: {aws_sync_err}")
+
         return jsonify({
             "document_id": final_doc_id,
             "filename": result.filename,
@@ -221,6 +255,7 @@ def api_translate():
     data = request.get_json() or {}
     markdown_text = data.get("markdown", "")
     target_lang = data.get("target_lang", "vi")
+    model_name = data.get("model", "")
 
     if not markdown_text.strip():
         return jsonify({"error": "Noi dung can dich khong duoc de trong"}), 400
@@ -228,7 +263,8 @@ def api_translate():
     try:
         translated_md = DocumentTranslator.translate_markdown(
             markdown_text=markdown_text,
-            target_lang=target_lang
+            target_lang=target_lang,
+            model_name=model_name or "gemini-flash-lite-latest"
         )
 
         active_doc_id = session.get("active_document_id")

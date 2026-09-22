@@ -82,8 +82,11 @@ def handle_s3_event(event: dict, settings: Any, engine: HybridDocumentEngine, s3
 
         # Ghi nhận trạng thái vào DynamoDB
         try:
+            from datetime import datetime, timezone
             table = dynamodb.Table(settings.dynamodb_table)
             table.put_item(Item={
+                "job_id": doc_id,
+                "created_at": datetime.now(timezone.utc).isoformat(),
                 "document_id": doc_id,
                 "filename": filename,
                 "total_pages": result.total_pages,
