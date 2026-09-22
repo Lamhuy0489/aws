@@ -41,6 +41,16 @@ class OCRDispatcher:
                 "**Tổng giá trị thanh toán**: 2,057,000 VNĐ"
             )
 
+        # Xu ly che do AWS Native Foundation Models (Amazon Bedrock)
+        if self.settings.ocr_mode == "AWS_NATIVE":
+            try:
+                logger.info(f"Đang gửi yêu cầu Vision OCR tới AWS Bedrock ({self.settings.aws_bedrock_model})...")
+                bedrock_md = self._call_aws_bedrock_vision(image_bytes)
+                if bedrock_md:
+                    return bedrock_md
+            except Exception as e:
+                logger.warning(f"Lỗi khi gọi AWS Bedrock Vision ({e}). Đang kích hoạt chuyển đổi dự phòng sang Gemini...")
+
         kaggle_err = None
         # Thử gọi Kaggle Endpoint nếu ở chế độ HYBRID_KAGGLE
         if self.settings.ocr_mode == "HYBRID_KAGGLE" and self.settings.kaggle_endpoint:
@@ -183,3 +193,42 @@ class OCRDispatcher:
                 last_err_msg = str(e)
 
         raise RuntimeError(f"Tất cả các mô hình Gemini Vision đều phản hồi chậm hoặc quá tải. Chi tiết lỗi cuối: {last_err_msg}")
+
+    def _call_aws_bedrock_vision(self, image_bytes: bytes) -> str:
+        """Gửi ảnh đến AWS Bedrock sử dụng Converse API với mô hình đa phương thức."""
+        from src.backend.cloud.aws_storage import AWSStorageService
+        aws_svc = AWSStorageService(settings=self.settings)
+        if not aws_svc.is_connected:
+            raise RuntimeError("Chưa kết nối hoặc cấu hình AWS SDK Boto3 không hợp lệ.")
+
+        target_model = self.settings.aws_bedrock_model
+        if "nova-micro" in target_model.lower():
+            target_model = "amazon.nova-lite-v1:0"
+
+        # Chuẩn hóa ảnh sang JPEG nếu cần
+        try:
+            import io
+            from PIL import Image
+            pil_img = Image.open(io.BytesIO(image_bytes))
+            w, h = pil_img.size
+            max_dim = 1568
+            if max(w, h) > max_dim:
+                scale = max_dim / max(w, h)
+                pil_img = pil_img.resize((int(w * scale), int(h * scale)), Image.Resampling.LANCZOS)
+            buf = io.BytesIO()
+            pil_img.convert("RGB").save(buf, format="JPEG", quality=85)
+            image_bytes = buf.getvalue()
+        except Exception as resize_err:
+            logger.warning(f"Không thể xử lý kích thước ảnh Bedrock: {resize_err}")
+
+        res = aws_svc.invoke_bedrock_converse(
+            prompt=SYSTEM_OCR_PROMPT,
+            system_instruction="Bạn là chuyên gia OCR tài liệu chuẩn xác cao trên AWS.",
+            model_id=target_model,
+            image_bytes=image_bytes,
+            image_format="jpeg"
+        )
+        if not res:
+            raise RuntimeError(f"AWS Bedrock không trả về kết quả hoặc bị từ chối quyền truy cập ({target_model}).")
+        return res.strip()
+

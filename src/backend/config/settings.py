@@ -8,9 +8,9 @@ logger = logging.getLogger(__name__)
 
 class AppSettings(BaseModel):
     """Cấu hình toàn hệ thống cho Hybrid Document OCR Platform."""
-    ocr_mode: Literal["HYBRID_KAGGLE", "STANDALONE", "LOCAL_MOCK"] = Field(
+    ocr_mode: Literal["HYBRID_KAGGLE", "STANDALONE", "LOCAL_MOCK", "AWS_NATIVE"] = Field(
         default="HYBRID_KAGGLE",
-        description="Chế độ chạy: HYBRID_KAGGLE (Kaggle GPU/TPU), STANDALONE (Gemini API), hoặc LOCAL_MOCK (Kiểm thử giao diện cục bộ)"
+        description="Chế độ chạy: HYBRID_KAGGLE (Kaggle GPU/TPU), STANDALONE (Gemini API), LOCAL_MOCK (Kiểm thử cục bộ), hoặc AWS_NATIVE (Amazon Bedrock/Nova)"
     )
     fast_path_enabled: bool = Field(
         default=True,

@@ -133,18 +133,33 @@ class AWSStorageService:
     def invoke_bedrock_converse(
         self,
         prompt: str,
-        system_instruction: str = "Ban la chuyen gia dich thuat tai lieu ky thuat chat luong cao.",
-        model_id: Optional[str] = None
+        system_instruction: str = "Ban la chuyen gia xu ly va dich thuat tai lieu ky thuat chat luong cao.",
+        model_id: Optional[str] = None,
+        image_bytes: Optional[bytes] = None,
+        image_format: str = "jpeg"
     ) -> Optional[str]:
-        """Goi mo hinh Amazon Bedrock qua Converse API (Amazon Nova hoac Anthropic Claude)."""
+        """Goi mo hinh Amazon Bedrock qua Converse API (Amazon Nova hoac Anthropic Claude), ho tro ca van ban va hinh anh."""
         if not self.is_connected:
             return None
         target_model = model_id or self.settings.aws_bedrock_model
         try:
+            content_blocks = []
+            if image_bytes:
+                fmt = image_format.lower().replace("jpg", "jpeg")
+                if fmt not in ["jpeg", "png", "gif", "webp"]:
+                    fmt = "jpeg"
+                content_blocks.append({
+                    "image": {
+                        "format": fmt,
+                        "source": {"bytes": image_bytes}
+                    }
+                })
+            content_blocks.append({"text": prompt})
+
             messages = [
                 {
                     "role": "user",
-                    "content": [{"text": prompt}]
+                    "content": content_blocks
                 }
             ]
             system_config = [{"text": system_instruction}] if system_instruction else []
@@ -153,7 +168,7 @@ class AWSStorageService:
                 modelId=target_model,
                 messages=messages,
                 system=system_config,
-                inferenceConfig={"temperature": 0.2, "maxTokens": 2048}
+                inferenceConfig={"temperature": 0.2, "maxTokens": 4096}
             )
             output_content = response["output"]["message"]["content"][0]["text"]
             return output_content

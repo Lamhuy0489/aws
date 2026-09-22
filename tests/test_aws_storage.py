@@ -62,3 +62,62 @@ def test_check_aws_health_mock():
         assert health["s3"]["status"] == "HEALTHY"
         assert health["dynamodb"]["status"] == "ACTIVE"
         assert health["ssm"]["status"] == "EXISTS"
+
+def test_invoke_bedrock_converse_text():
+    settings = AppSettings()
+    svc = AWSStorageService(settings=settings)
+    svc.is_connected = True
+    svc.bedrock_runtime = MagicMock()
+    svc.bedrock_runtime.converse.return_value = {
+        "output": {
+            "message": {
+                "content": [{"text": "Hello from Bedrock Converse"}]
+            }
+        }
+    }
+
+    result = svc.invoke_bedrock_converse(
+        prompt="Test prompt",
+        system_instruction="System prompt"
+    )
+    assert result == "Hello from Bedrock Converse"
+    svc.bedrock_runtime.converse.assert_called_once()
+
+def test_invoke_bedrock_converse_multimodal():
+    settings = AppSettings()
+    svc = AWSStorageService(settings=settings)
+    svc.is_connected = True
+    svc.bedrock_runtime = MagicMock()
+    svc.bedrock_runtime.converse.return_value = {
+        "output": {
+            "message": {
+                "content": [{"text": "| Item | Price |\n| --- | --- |\n| S3 | 0.02 |"}]
+            }
+        }
+    }
+
+    dummy_image = b"\xff\xd8\xff\xe0\x00\x10JFIF"
+    result = svc.invoke_bedrock_converse(
+        prompt="OCR this image",
+        image_bytes=dummy_image,
+        image_format="jpeg"
+    )
+    assert "| Item | Price |" in result
+    call_args = svc.bedrock_runtime.converse.call_args[1]
+    messages = call_args["messages"]
+    assert len(messages[0]["content"]) == 2
+    assert "image" in messages[0]["content"][0]
+    assert messages[0]["content"][0]["image"]["format"] == "jpeg"
+
+def test_ocr_dispatcher_aws_native_mode():
+    from src.backend.parsers.ocr_dispatcher import OCRDispatcher
+    settings = AppSettings(
+        ocr_mode="AWS_NATIVE",
+        aws_bedrock_model="amazon.nova-lite-v1:0"
+    )
+    dispatcher = OCRDispatcher(settings=settings)
+    with patch.object(dispatcher, "_call_aws_bedrock_vision", return_value="| Bedrock | Table |"):
+        result = dispatcher.ocr_image(b"fake_image_bytes")
+        assert result == "| Bedrock | Table |"
+
+

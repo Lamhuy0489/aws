@@ -75,6 +75,12 @@ def api_process():
             gemini_key = picked["key_value"]
             gemini_model = picked.get("model_name") or "gemini-flash-lite-latest"
             active_key_id = picked["id"]
+    elif model_choice in ["aws-bedrock", "aws-native"]:
+        mode = "AWS_NATIVE"
+        gemini_fallback = KeyTourManager.get_next_key("gemini")
+        if gemini_fallback:
+            gemini_key = gemini_fallback["key_value"]
+            gemini_model = gemini_fallback.get("model_name") or "gemini-flash-lite-latest"
     elif model_choice == "groq":
         mode = "STANDALONE"
         picked = KeyTourManager.get_next_key("groq")
@@ -261,11 +267,18 @@ def api_translate():
         return jsonify({"error": "Noi dung can dich khong duoc de trong"}), 400
 
     try:
-        translated_md = DocumentTranslator.translate_markdown(
-            markdown_text=markdown_text,
-            target_lang=target_lang,
-            model_name=model_name or "gemini-flash-lite-latest"
-        )
+        if model_name and ("bedrock" in model_name.lower() or "nova" in model_name.lower()):
+            translated_md = DocumentTranslator.translate_with_bedrock(
+                markdown_text=markdown_text,
+                target_lang=target_lang,
+                model_id=model_name if ("amazon." in model_name or "anthropic." in model_name) else None
+            )
+        else:
+            translated_md = DocumentTranslator.translate_markdown(
+                markdown_text=markdown_text,
+                target_lang=target_lang,
+                model_name=model_name or "gemini-flash-lite-latest"
+            )
 
         active_doc_id = session.get("active_document_id")
         if active_doc_id and user:
