@@ -96,15 +96,14 @@ Tài liệu này là nguồn sự thật duy nhất (Single Source of Truth) đ�
 
 ### Giai đoạn 5: Tích hợp Đám mây Đầu - Cuối & Đo kiểm Hiệu năng (Tuần 11)
 - [x] Đóng gói container hóa Web Studio: Xây dựng chuẩn mực Dockerfile (nền Python 3.11-slim) và .dockerignore tối ưu hóa cho Amazon ECR / ECS Fargate.
-- [ ] Cấu hình cơ chế tự động hóa: S3 Event Notification kích hoạt Lambda khi có tệp mới trong S3 uploads/.
-- [ ] Triển khai giao diện Web Studio lên Amazon S3 Static Hosting + Amazon CloudFront CDN có HTTPS.
+- [x] Cấu hình cơ chế tự động hóa Serverless hướng sự kiện: S3 Event Notification kích hoạt Lambda (`huylam-ocr-processor`) khi có tệp mới trong S3 `uploads/`, ghi nhận tiến trình vào DynamoDB `document_processing_jobs` (`RECEIVED_VIA_S3_EVENT`) và giám sát qua CloudWatch Logs (thời gian thực thi 214 ms, bộ nhớ 88 MB).
 - [x] Thực hiện đo kiểm hiệu năng thực tế (Benchmark):
   - [x] Tốc độ bóc tách Fast-Path (đạt 0.31s trên `cv.pdf` và 3.07s trên bài báo 11 trang, ~0.28s/trang).
   - [x] Thời gian nhận diện OCR trang scan qua Kaggle GPU và Gemini Failover (đạt 2.54s - 6.99s).
   - [x] Thời gian dịch thuật và độ chính xác giữ nguyên cấu trúc Markdown bảng biểu (hoàn tất chuyển ngữ `cv.pdf` đạt 3.480 ký tự).
   - [x] Tốc độ kết xuất và kích thước tệp xuất bản DOCX và PDF in ấn (tệp `cv.pdf.docx` 38.2 KB mở chuẩn trên Microsoft Word macOS).
 - [x] Tích hợp và đo kiểm tùy chọn độc lập AWS Native AI (Amazon Bedrock / Nova) trực tiếp trên Web Studio (không chạy song song).
-- [x] Biên soạn tài liệu Worklog Tuần 11 song ngữ kèm 7 ảnh minh chứng viền đỏ và đồng bộ lên website Hugo (215 trang).
+- [x] Biên soạn tài liệu Worklog Tuần 11 song ngữ kèm bộ 15 ảnh minh chứng viền đỏ chuẩn xác và đồng bộ lên website Hugo (215 trang).
 
 ### Giai đoạn 6: Nghiệm thu, Kiểm toán FinOps & Bảo vệ Tốt nghiệp (Tuần 12) [DỰ KIẾN]
 - [ ] Kiểm toán tài chính đám mây FinOps qua AWS Budgets / Cost Explorer: Chứng minh toàn bộ hạ tầng vận hành ở mức 0.00 USD trong suốt kỳ thực tập.
