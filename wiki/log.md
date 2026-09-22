@@ -23,3 +23,11 @@
   - Ghi nhan ket qua thuc hanh Lab 000007 (AWS Budgets 100$ & 200$) vao raw/labs/lab-000007-aws-budgets.md.
   - Ghi nhan ket qua thuc hanh Lab 000011 (AWS CLI) vao raw/labs/lab-000011-aws-cli.md.
   - Cap nhat Worklog tuan 1 tren website Hugo GitHub Pages tai lamhuy0489.github.io/workshop.
+
+## [2026-09-22]
+- Thiet lap nguon su that duy nhat ROADMAP.md tai goc kho luu tru voi day du checklist tien do 12 tuan danh dau [x] va [ ].
+- Cap nhat AGENT.md va CLAUDE.md dinh hinh vai tro duy nhat: Serverless Hybrid Document OCR, Parsing & Technical Translation Platform on AWS.
+- Xoa bo cac thu muc va logic ngoai le (rag, agents), xac thuc 27/27 test tu dong passing 100%.
+- Cap nhat de xuat Proposal va Worklog Tuan 10 song ngu tren website Hugo workshop, bien dich thanh cong 215 trang va day len GitHub.
+- Tao bai tong hop chuyen sau wiki/syntheses/project-status-and-roadmap.md va cap nhat wiki/index.md.
+- Soan thao huong dan chi tiet thiet lap tung buoc tren AWS Management Console (S3, DynamoDB, SSM Parameter Store).

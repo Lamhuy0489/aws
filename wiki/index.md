@@ -27,6 +27,7 @@ He thong tri thuc du an AWS va Agentic RAG duoc duy tri theo mo hinh Bo nao ngoa
 - [[fcaj-2026-workshop-template]]
 
 ## 5. Bai tong hop chuyen sau (Syntheses)
+- [[project-status-and-roadmap]]: Tong hop trang thai du an Serverless Hybrid OCR & Translation, kien truc mo rong AWS Native va checklist 12 tuan.
 - [[fcaj-internship-submission-guide]]: Huong dan xay dung va nop bao cao thuc tap FCAJ bang website Hugo tren GitHub Pages.
 
 ## 6. Luan chuyen cau tra loi (Outputs)
