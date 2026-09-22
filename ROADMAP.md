@@ -94,16 +94,16 @@ Tài liệu này là nguồn sự thật duy nhất (Single Source of Truth) đ�
   - [x] Đã hoàn thành thu thập và đóng khung đỏ cho toàn bộ 9 ảnh minh chứng thực tế trên AWS Console.
   - [x] Nhúng toàn bộ 9 ảnh minh chứng vào Worklog Tuần 10 song ngữ và biên dịch Hugo 215 trang không lỗi.
 
-### Giai đoạn 5: Tích hợp Đám mây Đầu - Cuối & Đo kiểm Hiệu năng (Tuần 11) [DỰ KIẾN]
+### Giai đoạn 5: Tích hợp Đám mây Đầu - Cuối & Đo kiểm Hiệu năng (Tuần 11)
 - [ ] Cấu hình cơ chế tự động hóa: S3 Event Notification kích hoạt Lambda hoặc đóng gói triển khai Docker Web Studio lên ECS Fargate.
 - [ ] Triển khai giao diện Web Studio lên Amazon S3 Static Hosting + Amazon CloudFront CDN có HTTPS.
-- [ ] Thực hiện đo kiểm hiệu năng thực tế (Benchmark):
-  - [ ] Tốc độ bóc tách Fast-Path (mục tiêu 0.1s - 0.3s/trang).
-  - [ ] Thời gian nhận diện OCR trang scan qua Kaggle GPU và Gemini Failover.
-  - [ ] Thời gian dịch thuật và độ chính xác giữ nguyên cấu trúc Markdown bảng biểu.
-  - [ ] Tốc độ kết xuất và kích thước tệp xuất bản DOCX và PDF in ấn.
-- [ ] Đo kiểm tùy chọn phụ AWS Native AI (Amazon Bedrock / Textract) khi người dùng chủ động bật trong Cài đặt.
-- [ ] Biên soạn tài liệu Worklog Tuần 11 song ngữ và đồng bộ lên website Hugo.
+- [x] Thực hiện đo kiểm hiệu năng thực tế (Benchmark):
+  - [x] Tốc độ bóc tách Fast-Path (đạt 0.31s trên `cv.pdf` và 3.07s trên bài báo 11 trang, ~0.28s/trang).
+  - [x] Thời gian nhận diện OCR trang scan qua Kaggle GPU và Gemini Failover (đạt 2.54s - 6.99s).
+  - [x] Thời gian dịch thuật và độ chính xác giữ nguyên cấu trúc Markdown bảng biểu (hoàn tất chuyển ngữ `cv.pdf` đạt 3.480 ký tự).
+  - [x] Tốc độ kết xuất và kích thước tệp xuất bản DOCX và PDF in ấn (tệp `cv.pdf.docx` 38.2 KB mở chuẩn trên Microsoft Word macOS).
+- [x] Tích hợp và đo kiểm tùy chọn độc lập AWS Native AI (Amazon Bedrock / Nova) trực tiếp trên Web Studio (không chạy song song).
+- [x] Biên soạn tài liệu Worklog Tuần 11 song ngữ kèm 7 ảnh minh chứng viền đỏ và đồng bộ lên website Hugo (215 trang).
 
 ### Giai đoạn 6: Nghiệm thu, Kiểm toán FinOps & Bảo vệ Tốt nghiệp (Tuần 12) [DỰ KIẾN]
 - [ ] Kiểm toán tài chính đám mây FinOps qua AWS Budgets / Cost Explorer: Chứng minh toàn bộ hạ tầng vận hành ở mức 0.00 USD trong suốt kỳ thực tập.
