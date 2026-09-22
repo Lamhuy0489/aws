@@ -95,7 +95,8 @@ Tài liệu này là nguồn sự thật duy nhất (Single Source of Truth) đ�
   - [x] Nhúng toàn bộ 9 ảnh minh chứng vào Worklog Tuần 10 song ngữ và biên dịch Hugo 215 trang không lỗi.
 
 ### Giai đoạn 5: Tích hợp Đám mây Đầu - Cuối & Đo kiểm Hiệu năng (Tuần 11)
-- [ ] Cấu hình cơ chế tự động hóa: S3 Event Notification kích hoạt Lambda hoặc đóng gói triển khai Docker Web Studio lên ECS Fargate.
+- [x] Đóng gói container hóa Web Studio: Xây dựng chuẩn mực Dockerfile (nền Python 3.11-slim) và .dockerignore tối ưu hóa cho Amazon ECR / ECS Fargate.
+- [ ] Cấu hình cơ chế tự động hóa: S3 Event Notification kích hoạt Lambda khi có tệp mới trong S3 uploads/.
 - [ ] Triển khai giao diện Web Studio lên Amazon S3 Static Hosting + Amazon CloudFront CDN có HTTPS.
 - [x] Thực hiện đo kiểm hiệu năng thực tế (Benchmark):
   - [x] Tốc độ bóc tách Fast-Path (đạt 0.31s trên `cv.pdf` và 3.07s trên bài báo 11 trang, ~0.28s/trang).
