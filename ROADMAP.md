@@ -105,12 +105,17 @@ Tài liệu này là nguồn sự thật duy nhất (Single Source of Truth) đ�
 - [x] Tích hợp và đo kiểm tùy chọn độc lập AWS Native AI (Amazon Bedrock / Nova) trực tiếp trên Web Studio (không chạy song song).
 - [x] Biên soạn tài liệu Worklog Tuần 11 song ngữ kèm bộ 15 ảnh minh chứng viền đỏ chuẩn xác và đồng bộ lên website Hugo (215 trang).
 
-### Giai đoạn 6: Nghiệm thu, Kiểm toán FinOps & Bảo vệ Tốt nghiệp (Tuần 12) [DỰ KIẾN]
-- [ ] Kiểm toán tài chính đám mây FinOps qua AWS Budgets / Cost Explorer: Chứng minh toàn bộ hạ tầng vận hành ở mức 0.00 USD trong suốt kỳ thực tập.
-- [ ] Thực hiện quy trình Teardown an toàn hoặc duy trì các tài nguyên ở chế độ On-Demand không phát sinh chi phí.
-- [ ] Chuẩn hóa toàn bộ nội dung hướng dẫn thực hành trong thư mục `workshop/content/5-Workshop/`.
-- [ ] Xây dựng kịch bản và quay video clip demo hoàn chỉnh (từ upload tệp -> bóc tách Fast-Path/OCR -> dịch thuật đa ngôn ngữ -> tải tệp kết quả -> kiểm tra dữ liệu trên AWS S3 và DynamoDB).
-- [ ] Hoàn thành Báo cáo Thực tập Tốt nghiệp (Final Internship Report) và Slide thuyết trình bảo vệ đề tài.
+### Giai đoạn 6: Triển khai Đám mây Doanh nghiệp 3 Tầng, Cân bằng tải ALB, Kiểm toán FinOps & Hoàn thiện Đề tài (Tuần 12) [HOÀN THÀNH 100%]
+- [x] Thiết kế kiến trúc mạng ảo Amazon VPC Multi-AZ (`huylam-vpc`, CIDR `10.0.0.0/16`) với 2 Public Subnets trải rộng trên 2 Vùng sẵn sàng (`ap-southeast-1a` và `ap-southeast-1b`), tích hợp Internet Gateway `huylam-igw` và Route Table công khai.
+- [x] Thiết lập an ninh phân tầng (Security Group Chaining): Khởi tạo `huylam-alb-sg` mở HTTP 80 toàn cầu (`0.0.0.0/0`) và `huylam-web-sg` chỉ chấp nhận kết nối cổng TCP 5000 bắt nguồn từ `huylam-alb-sg`.
+- [x] Cấu hình IAM Instance Profile: Đính kèm IAM Role `huylam-ssm-role` gồm `AmazonSSMManagedInstanceCore` (quản trị an toàn qua Session Manager không mở SSH), `AmazonS3FullAccess` và `AmazonDynamoDBFullAccess`.
+- [x] Khởi chạy máy chủ EC2 `huylam-ocr-web-server` (`i-0566e1eedaacea52d`, AL2023, t2.micro, ap-southeast-1a), tải mã nguồn từ GitHub, cài đặt môi trường ảo Python 3.11, và cấu hình daemon systemd `huylam-ocr.service` chạy WSGI Gunicorn trên cổng 5000.
+- [x] Cấu hình Target Group `huylam-ocr-tg` trên cổng 5000, tinh chỉnh Health Check Path `/login`, máy chủ đạt trạng thái `Healthy (1/1)`.
+- [x] Khởi tạo và kích hoạt Application Load Balancer `huylam-ocr-alb` (Internet-facing, Multi-AZ) với Listener HTTP:80 chuyển tiếp lưu lượng vào Target Group.
+- [x] Nghiệm thu đường link công khai thật (Public DNS URL): `http://huylam-ocr-alb-1284818160.ap-southeast-1.elb.amazonaws.com` truy cập trực tiếp từ Safari Internet, xác thực chuyển hướng và vận hành Web Studio mượt mà.
+- [x] Thu thập và gắn viền đỏ chuẩn xác cho bộ 10 ảnh minh chứng thực tế bao quanh Account Badge `huylam (677994024390)` và thông số cốt lõi.
+- [x] Biên soạn tài liệu Worklog Tuần 12 song ngữ trên website Hugo và đồng bộ toàn bộ mã nguồn lên GitHub repository.
+- [x] Xây dựng quy trình FinOps Teardown an toàn: Hướng dẫn người dùng các bước xóa ALB và dừng máy chủ EC2 sau khi nghiệm thu để bảo toàn ngân sách 0.00 USD trong suốt kỳ thực tập.
 
 ---
 
