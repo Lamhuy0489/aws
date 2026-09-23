@@ -142,39 +142,59 @@ class AWSStorageService:
         if not self.is_connected:
             return None
         target_model = model_id or self.settings.aws_bedrock_model
-        try:
-            content_blocks = []
-            if image_bytes:
-                fmt = image_format.lower().replace("jpg", "jpeg")
-                if fmt not in ["jpeg", "png", "gif", "webp"]:
-                    fmt = "jpeg"
-                content_blocks.append({
-                    "image": {
-                        "format": fmt,
-                        "source": {"bytes": image_bytes}
-                    }
-                })
-            content_blocks.append({"text": prompt})
 
-            messages = [
-                {
-                    "role": "user",
-                    "content": content_blocks
+        candidate_configs = [
+            ("ap-northeast-1", "amazon.nova-lite-v1:0"),
+            ("us-east-1", "us.amazon.nova-lite-v1:0"),
+            ("ap-southeast-1", "apac.amazon.nova-lite-v1:0"),
+            ("us-east-1", "anthropic.claude-3-haiku-20240307-v1:0"),
+            (self.region, target_model)
+        ]
+
+        content_blocks = []
+        if image_bytes:
+            fmt = image_format.lower().replace("jpg", "jpeg")
+            if fmt not in ["jpeg", "png", "gif", "webp"]:
+                fmt = "jpeg"
+            content_blocks.append({
+                "image": {
+                    "format": fmt,
+                    "source": {"bytes": image_bytes}
                 }
-            ]
-            system_config = [{"text": system_instruction}] if system_instruction else []
-            
-            response = self.bedrock_runtime.converse(
-                modelId=target_model,
-                messages=messages,
-                system=system_config,
-                inferenceConfig={"temperature": 0.2, "maxTokens": 4096}
-            )
-            output_content = response["output"]["message"]["content"][0]["text"]
-            return output_content
-        except Exception as e:
-            logger.error(f"Loi khi goi Bedrock converse ({target_model}): {e}")
-            return None
+            })
+        content_blocks.append({"text": prompt})
+
+        messages = [
+            {
+                "role": "user",
+                "content": content_blocks
+            }
+        ]
+        system_config = [{"text": system_instruction}] if system_instruction else []
+
+        for reg, mid in candidate_configs:
+            try:
+                client = boto3.client("bedrock-runtime", region_name=reg)
+                logger.info(f"Đang gửi yêu cầu tới AWS Bedrock ({mid}) tại vùng {reg}...")
+                response = client.converse(
+                    modelId=mid,
+                    messages=messages,
+                    system=system_config,
+                    inferenceConfig={"temperature": 0.2, "maxTokens": 4096}
+                )
+                output_content = response["output"]["message"]["content"][0]["text"]
+                logger.info(f"AWS Bedrock ({mid}) tại {reg} phản hồi thành công.")
+                return output_content
+            except Exception as e:
+                err_str = str(e)
+                if "being verified" in err_str:
+                    logger.info(f"AWS Bedrock ({mid} - {reg}): Tài khoản đang trong chu kỳ kích hoạt hạn mức AWS.")
+                else:
+                    logger.debug(f"Không thể gọi Bedrock ({mid} - {reg}): {err_str[:120]}")
+                continue
+
+        logger.warning("Toàn bộ các endpoint AWS Bedrock đều đang trong chu kỳ xác minh tài khoản hoặc từ chối truy cập.")
+        return None
 
     def check_aws_health(self) -> Dict[str, Any]:
         """Kiem tra toan dien ket noi va tinh trang cac tai nguyen AWS."""
