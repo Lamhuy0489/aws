@@ -52,23 +52,6 @@ def api_process():
     doc_lang = request.form.get("language", "vi")
     fast_path = request.form.get("fast_path", "true").lower() == "true"
 
-    # Kiểm tra Rate Limit cho mô hình AWS Native (chính xác 20 lượt / ngày / tài khoản)
-    is_aws_model = model_choice in ["aws-bedrock", "aws-native"]
-    aws_quota_deducted = False
-
-    if is_aws_model:
-        current_quota = get_user_aws_quota(user["id"], limit=20)
-        if current_quota.get("remaining", 0) <= 0:
-            return jsonify({
-                "error": "Bạn đã sử dụng hết 20 lượt gọi mô hình AWS Bedrock trong ngày hôm nay. Hạn mức sẽ được làm mới vào ngày mai. Bạn có thể chọn mô hình Google Gemini hoặc Kaggle để tiếp tục bóc tách không giới hạn.",
-                "code": "QUOTA_EXCEEDED",
-                "aws_quota": current_quota
-            }), 429
-
-        # Tạm tính 1 lượt sử dụng cho AWS
-        increment_user_aws_usage(user["id"], limit=20)
-        aws_quota_deducted = True
-
     # Xac dinh che do bóc tách dua tren lua chon mo hinh
     mode = "STANDALONE"
     gemini_key = ""
@@ -198,18 +181,6 @@ def api_process():
         except Exception as aws_sync_err:
             logger.info(f"Lưu trữ AWS Cloud được bỏ qua hoặc ghi nhận nhẹ: {aws_sync_err}")
 
-        # Nếu người dùng chọn mô hình AWS nhưng Bedrock chưa thể phục vụ (phải failover sang Gemini):
-        # Tự động hoàn lại hạn mức gọi AWS để bảo vệ quyền lợi người dùng
-        if is_aws_model and engine.ocr_dispatcher.last_engine_used != "aws_bedrock":
-            try:
-                refund_user_aws_usage(user["id"], limit=20)
-                logger.info(f"Đã hoàn trả 1 lượt gọi AWS cho user {user['id']} vì hệ thống kích hoạt Failover sang Gemini Vision.")
-            except Exception as ref_err:
-                logger.warning(f"Lỗi khi hoàn trả hạn mức: {ref_err}")
-
-        # Lấy thông tin hạn mức AWS cập nhật nhất của người dùng
-        user_quota = get_user_aws_quota(user["id"], limit=20)
-
         return jsonify({
             "document_id": final_doc_id,
             "filename": result.filename,
@@ -218,17 +189,9 @@ def api_process():
             "scanned_pages_count": result.scanned_pages_count,
             "full_markdown": result.full_markdown,
             "processing_time_seconds": result.processing_time_seconds,
-            "page_images": result.page_images,
-            "aws_quota": user_quota
+            "page_images": result.page_images
         })
     except Exception as e:
-        if aws_quota_deducted:
-            try:
-                refund_user_aws_usage(user["id"], limit=20)
-                logger.info(f"Đã hoàn trả hạn mức 1 lượt gọi AWS cho user {user['id']} do bóc tách phát sinh lỗi.")
-            except Exception as ref_err:
-                logger.warning(f"Lỗi khi hoàn trả hạn mức AWS: {ref_err}")
-
         logger.error(f"Loi xu ly tai lieu: {str(e)}")
         return jsonify({"error": str(e)}), 500
 

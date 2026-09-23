@@ -21,54 +21,6 @@ window.initStudioPage = () => {
   // Khoi tao cac 2D Vector Icons chuan ky thuat
   initStudioIcons();
 
-  // Quan ly han muc su dung AWS Bedrock
-  async function fetchAwsQuota() {
-    try {
-      const resp = await fetch("/api/studio/quota");
-      if (!resp.ok) return;
-      const data = await resp.json();
-      if (data && data.aws_quota) {
-        updateAwsQuotaUI(data.aws_quota);
-      }
-    } catch (e) {
-      console.warn("Khong the tai han muc AWS:", e);
-    }
-  }
-
-  function updateAwsQuotaUI(quota) {
-    const quotaText = document.getElementById("awsQuotaText");
-    if (!quotaText || !quota) return;
-    const remaining = quota.remaining !== undefined ? quota.remaining : 20;
-    const limit = quota.limit || 20;
-    quotaText.textContent = `${remaining} / ${limit} còn lại`;
-    if (remaining <= 0) {
-      quotaText.style.color = "var(--color-destructive, #ef4444)";
-      quotaText.textContent = `0 / ${limit} (Hết lượt hôm nay)`;
-    } else if (remaining <= 5) {
-      quotaText.style.color = "#f59e0b";
-    } else {
-      quotaText.style.color = "var(--color-primary, #2563eb)";
-    }
-  }
-
-  // Nap han muc AWS ngay khi mo trang
-  fetchAwsQuota();
-
-  const modelChoiceEl = document.getElementById("modelChoice");
-  if (modelChoiceEl) {
-    modelChoiceEl.addEventListener("change", () => {
-      const val = modelChoiceEl.value;
-      const quotaBox = document.getElementById("awsQuotaBox");
-      if (quotaBox) {
-        if (val === "aws-bedrock") {
-          quotaBox.style.opacity = "1";
-        } else {
-          quotaBox.style.opacity = "0.75";
-        }
-      }
-    });
-  }
-
   let selectedFile = null;
 
   if (dropZone && fileInput) {
@@ -336,23 +288,12 @@ window.initStudioPage = () => {
 
         const data = await response.json();
         if (!response.ok) {
-          if (response.status === 429) {
-            if (data.aws_quota) updateAwsQuotaUI(data.aws_quota);
-            throw new Error(data.error || "Bạn đã dùng hết hạn mức 20 lượt gọi AWS Bedrock hôm nay.");
-          }
           throw new Error(data.error || "Lỗi bóc tách tài liệu");
         }
 
         currentProcessedResult = data;
         currentPageIndex = 0;
         currentActiveDocTab = "original";
-
-        // Cap nhat han muc AWS neu co trong ket qua tra ve
-        if (data.aws_quota) {
-          updateAwsQuotaUI(data.aws_quota);
-        } else {
-          fetchAwsQuota();
-        }
 
         // Luu vao storage an toan de bao toan trang thai khi chuyen tab hoac tai lai trang
         saveDocState(data);
@@ -364,7 +305,6 @@ window.initStudioPage = () => {
         if (window.AppIcons) window.AppIcons.initAutoIcons();
         showToast("Bóc tách tài liệu thành công", "success");
       } catch (err) {
-        fetchAwsQuota();
         showPipelineError(err.message);
         showToast("Lỗi xử lý: " + err.message, "error");
         if (emptyGuide && (!currentProcessedResult)) emptyGuide.style.display = "block";
