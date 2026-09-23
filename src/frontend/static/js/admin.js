@@ -184,8 +184,23 @@ async function loadAdminUsers() {
   }
 }
 
-window.openAddKeyModal = () => {
-  document.getElementById("addKeyModal").style.display = "flex";
+window.openAddKeyModal = (defaultProvider) => {
+  const modal = document.getElementById("addKeyModal");
+  if (!modal) return;
+  modal.style.display = "flex";
+  if (defaultProvider === "kaggle") {
+    const prov = document.getElementById("newKeyProvider");
+    if (prov) prov.value = "kaggle";
+    const alias = document.getElementById("newKeyAlias");
+    if (alias && !alias.value) alias.value = "Kaggle GPU Qwen2.5-VL";
+    const model = document.getElementById("newKeyModel");
+    if (model) model.value = "Qwen2.5-VL-7B";
+    const val = document.getElementById("newKeyValue");
+    if (val) {
+      val.placeholder = "https://xxxx.trycloudflare.com/ocr";
+      val.focus();
+    }
+  }
 };
 
 window.closeAddKeyModal = () => {

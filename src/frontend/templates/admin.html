@@ -64,6 +64,93 @@
   </div>
 </div>
 
+<!-- Huong Dan Khoi Chay Va Nhap Key Kaggle GPU OCR Notebook -->
+<div class="card" style="margin-bottom: var(--space-xl); border-left: 4px solid var(--color-accent); background: linear-gradient(180deg, var(--color-card) 0%, var(--color-muted) 100%);">
+  <div class="card-header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: var(--space-md);">
+    <div>
+      <h3 class="card-title" style="display: flex; align-items: center; gap: 8px;">
+        <span data-icon="cpu" data-icon-size="20" style="color: var(--color-accent);"></span>
+        <span>Hướng Dẫn Kết Nối Kaggle GPU OCR Server (Qwen2.5-VL)</span>
+      </h3>
+      <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--color-muted-foreground);">
+        Khởi chạy máy chủ Vision OCR miễn phí trên Kaggle GPU (T4 x 2 / P100) và cấp quyền truy cập qua Cloudflare Tunnel
+      </p>
+    </div>
+    <div style="display: flex; gap: var(--space-sm); align-items: center; flex-wrap: wrap;">
+      <a href="https://www.kaggle.com/code/lamhuy8904/qwen2-5-vl-ocr-server" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm" style="display: inline-flex; align-items: center; gap: 6px;">
+        <span data-icon="externalLink" data-icon-size="14"></span>
+        <span>Mở Notebook Trên Kaggle</span>
+      </a>
+      <a href="/static/notebooks/qwen_ocr_server.ipynb" download class="btn btn-outline btn-sm" style="display: inline-flex; align-items: center; gap: 6px;">
+        <span data-icon="download" data-icon-size="14"></span>
+        <span>Tải Tệp .ipynb</span>
+      </a>
+      <button type="button" class="btn btn-primary btn-sm" onclick="openAddKeyModal('kaggle')" style="display: inline-flex; align-items: center; gap: 6px;">
+        <span data-icon="plus" data-icon-size="14"></span>
+        <span>Nhập Endpoint Kaggle</span>
+      </button>
+    </div>
+  </div>
+
+  <div style="padding: 0 var(--space-lg) var(--space-lg) var(--space-lg);">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--space-md); margin-top: var(--space-md);">
+      <div style="background: var(--color-card); padding: var(--space-md); border-radius: var(--radius-md); border: 1px solid var(--color-border);">
+        <div style="font-weight: 600; font-size: 14px; margin-bottom: 6px; color: var(--color-foreground);">
+          1. Thiết Lập Môi Trường Kaggle
+        </div>
+        <div style="font-size: 13px; color: var(--color-muted-foreground); line-height: 1.5;">
+          Mở notebook trên Kaggle. Trong mục <strong>Session options</strong> ở thanh điều khiển bên phải:
+          <ul style="margin: 6px 0 0 0; padding-left: 18px;">
+            <li><strong>Accelerator</strong>: Chọn <code>GPU T4 x 2</code> hoặc <code>GPU P100</code>.</li>
+            <li><strong>Internet</strong>: Bật <code>Internet on</code> (bắt buộc để tải thư viện và mở tunnel).</li>
+          </ul>
+        </div>
+      </div>
+
+      <div style="background: var(--color-card); padding: var(--space-md); border-radius: var(--radius-md); border: 1px solid var(--color-border);">
+        <div style="font-weight: 600; font-size: 14px; margin-bottom: 6px; color: var(--color-foreground);">
+          2. Thực Thi Notebook (Run All)
+        </div>
+        <div style="font-size: 13px; color: var(--color-muted-foreground); line-height: 1.5;">
+          Bấm <strong>Run All</strong> trên Kaggle. Quá trình tự động thực hiện:
+          <ul style="margin: 6px 0 0 0; padding-left: 18px;">
+            <li>Cài đặt <code>transformers</code>, <code>qwen-vl-utils</code>, <code>pycloudflared</code>.</li>
+            <li>Nạp mô hình <code>Qwen2.5-VL-7B-Instruct</code> vào VRAM GPU.</li>
+            <li>Khởi chạy FastAPI (Port 8000) và mở Cloudflare Tunnel.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div style="background: var(--color-card); padding: var(--space-md); border-radius: var(--radius-md); border: 1px solid var(--color-border);">
+        <div style="font-weight: 600; font-size: 14px; margin-bottom: 6px; color: var(--color-foreground);">
+          3. Lấy Public Tunnel URL
+        </div>
+        <div style="font-size: 13px; color: var(--color-muted-foreground); line-height: 1.5;">
+          Tại cell cuối cùng, đợi thông báo:
+          <div style="background: #1e293b; color: #38bdf8; padding: 6px 8px; border-radius: 4px; font-family: var(--font-mono); font-size: 11px; margin-top: 6px; word-break: break-all;">
+            URL Endpoint: https://xxx.trycloudflare.com/ocr
+          </div>
+          Sao chép chuỗi <code>https://...trycloudflare.com</code>.
+        </div>
+      </div>
+
+      <div style="background: var(--color-card); padding: var(--space-md); border-radius: var(--radius-md); border: 1px solid var(--color-border);">
+        <div style="font-weight: 600; font-size: 14px; margin-bottom: 6px; color: var(--color-foreground);">
+          4. Nhập Key Vào Hệ Thống
+        </div>
+        <div style="font-size: 13px; color: var(--color-muted-foreground); line-height: 1.5;">
+          Bấm nút <strong>Nhập Endpoint Kaggle</strong> phía trên:
+          <ul style="margin: 6px 0 0 0; padding-left: 18px;">
+            <li>Provider: <code>Kaggle TPU/GPU</code></li>
+            <li>Giá trị: Dán link <code>https://...trycloudflare.com/ocr</code></li>
+            <li>Độ ưu tiên: Đặt <code>1</code> và bấm <strong>Lưu Khóa API</strong>.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Phan He Quan Ly Tour Xoay API Key -->
 <div class="card" style="margin-bottom: var(--space-xl);">
   <div class="card-header">
