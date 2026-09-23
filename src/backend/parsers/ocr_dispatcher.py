@@ -8,18 +8,19 @@ from src.backend.config.settings import AppSettings
 logger = logging.getLogger(__name__)
 
 SYSTEM_OCR_PROMPT = (
-    "Bạn là chuyên gia OCR tài liệu cao cấp. Hãy chuyển đổi hình ảnh tài liệu này "
-    "thành định dạng Markdown chuẩn xác. Yêu cầu bắt buộc:\n"
-    "1. Giữ nguyên 100% toàn bộ bảng biểu số liệu bằng định dạng Markdown Table (| Cột 1 | Cột 2 |).\n"
-    "2. Giữ nguyên các cấp tiêu đề (#, ##, ###), danh sách liệt kê, và thứ tự đọc của văn bản nhiều cột.\n"
-    "3. Bảo toàn chính xác toàn bộ chữ tiếng Việt có dấu và các ký tự đặc biệt.\n"
-    "4. Tuyệt đối không thêm lời giải thích, lời chào hay bình luận; chỉ xuất duy nhất nội dung Markdown của tài liệu."
+    "Bạn là một hệ thống nhận diện và bóc tách tài liệu (OCR) chính xác tuyệt đối. "
+    "Nhiệm vụ của bạn là đọc và trích xuất TOÀN BỘ nội dung văn bản có trong tài liệu/hình ảnh này sang định dạng Markdown chuẩn.\n"
+    "Yêu cầu:\n"
+    "1. CHỈ in ra duy nhất nội dung văn bản thực tế có trong tài liệu (tiêu đề, các đoạn văn bản, bảng biểu dữ liệu, danh sách, công thức).\n"
+    "2. Giữ nguyên 100% cấu trúc bảng biểu Markdown (| Cột 1 | Cột 2 |) và chính tả tiếng Việt có dấu chuẩn xác.\n"
+    "3. Tuyệt đối KHÔNG in ra lời chào, lời dẫn, ghi chú, giải thích, thông số kỹ thuật, metadata hoặc bảng đối soát hệ thống. Chỉ in duy nhất nội dung tài liệu."
 )
 
 class OCRDispatcher:
-    """Tầng 2: Điều phối gọi mô hình Vision OCR ngoại vi (Kaggle GPU/TPU hoặc Gemini Fallback)."""
+    """Tầng 2: Điều phối gọi mô hình Vision OCR ngoại vi (AWS Bedrock, Kaggle GPU/TPU hoặc Gemini Failover)."""
     def __init__(self, settings: AppSettings):
         self.settings = settings
+        self.last_engine_used = ""
 
     def ocr_image(self, image_bytes: bytes) -> str:
         """Thực hiện OCR cho ảnh trang scan, tự động kích hoạt failover nếu gặp lỗi."""
@@ -47,12 +48,27 @@ class OCRDispatcher:
                 logger.info(f"Đang gửi yêu cầu Vision OCR tới AWS Bedrock ({self.settings.aws_bedrock_model})...")
                 bedrock_md = self._call_aws_bedrock_vision(image_bytes)
                 if bedrock_md:
+                    self.last_engine_used = "aws_bedrock"
                     return bedrock_md
             except Exception as e:
-                logger.warning(f"Lỗi khi gọi AWS Bedrock Vision ({e}). Đang kích hoạt cơ chế bóc tách thích ứng...")
+                logger.warning(f"AWS Bedrock chưa khả dụng ({e}). Kích hoạt chuyển đổi dự phòng sang Gemini Vision để bóc tách nội dung thật...")
             
-            # Trả về kết quả bóc tách thích ứng để đảm bảo tiến trình không bị gián đoạn
-            return self._generate_bedrock_fallback_markdown(image_bytes)
+            # Tự động nạp Gemini Key từ Tour nếu chưa có
+            if not self.settings.gemini_api_key:
+                try:
+                    from src.backend.llm.key_tour_manager import KeyTourManager
+                    picked_g = KeyTourManager.get_next_key("gemini")
+                    if picked_g:
+                        self.settings.gemini_api_key = picked_g["key_value"]
+                        self.settings.gemini_model = picked_g.get("model_name") or "gemini-flash-lite-latest"
+                except Exception as tour_err:
+                    logger.warning(f"Không thể nạp Gemini Key dự phòng: {tour_err}")
+
+            if self.settings.gemini_api_key:
+                self.last_engine_used = "gemini_failover"
+                return self._call_gemini_vision_with_failover(image_bytes)
+
+            raise RuntimeError("AWS Bedrock không phản hồi và không tìm thấy khóa Gemini dự phòng hợp lệ.")
 
         kaggle_err = None
         # Thử gọi Kaggle Endpoint nếu ở chế độ HYBRID_KAGGLE
@@ -130,15 +146,40 @@ class OCRDispatcher:
         return data.get("markdown", data.get("text", "")).strip()
 
     def _call_gemini_vision_with_failover(self, image_bytes: bytes) -> str:
-        """Gửi ảnh trực tiếp đến Gemini Vision REST API với cơ chế tự động xoay chuyển mô hình dự phòng (Failover)."""
+        """
+        Gửi ảnh đến Gemini Vision REST API với cơ chế Tour Xoay Key đa tầng:
+        - Xoay vòng qua tất cả các API Key Gemini đang hoạt động trong CSDL.
+        - Với mỗi Key, tự động thử qua các phiên bản mô hình tối ưu.
+        - Nếu 1 key bị lỗi (400 Invalid, 403, 429 Quota), tự động loại trừ và xoay sang Key kế tiếp.
+        """
+        from src.backend.database.db import get_active_keys_by_provider, toggle_api_key_status
+        from src.backend.llm.key_tour_manager import KeyTourManager
+
         b64_image = base64.b64encode(image_bytes).decode("utf-8")
-        
-        # Danh sách mô hình ưu tiên: Mô hình cấu hình -> gemini-flash-lite-latest -> gemini-3.5-flash-lite
-        primary_model = self.settings.gemini_model or "gemini-flash-lite-latest"
-        candidate_models = [primary_model]
-        for fallback in ["gemini-flash-lite-latest", "gemini-3.5-flash-lite"]:
-            if fallback not in candidate_models:
-                candidate_models.append(fallback)
+
+        # Thu thập danh sách API Keys có thể sử dụng cho tour xoay
+        key_candidates = []
+        if self.settings.gemini_api_key and not self.settings.gemini_api_key.startswith("AIzaSy_"):
+            key_candidates.append({
+                "id": None,
+                "key_value": self.settings.gemini_api_key,
+                "key_alias": "Configured Key",
+                "model_name": self.settings.gemini_model or "gemini-flash-lite-latest"
+            })
+
+        # Nạp thêm tất cả các key active từ CSDL
+        try:
+            db_keys = get_active_keys_by_provider("gemini")
+            for k in db_keys:
+                if not any(c["key_value"] == k["key_value"] for c in key_candidates):
+                    # Bỏ qua các key demo giả lập
+                    if not k["key_value"].startswith("AIzaSy_DEMO") and not k["key_value"].startswith("AIzaSy_TEST"):
+                        key_candidates.append(dict(k))
+        except Exception as db_err:
+            logger.warning(f"Không thể nạp danh sách key từ CSDL: {db_err}")
+
+        if not key_candidates:
+            raise RuntimeError("Không có API Key Gemini nào đang hoạt động trong hệ thống xoay tour.")
 
         payload = {
             "contents": [
@@ -161,41 +202,70 @@ class OCRDispatcher:
         }
 
         last_err_msg = ""
-        # Timeout cho moi lan thu model: toi da 12 giay de tranh treo giao dien
-        per_try_timeout = min(self.settings.timeout_seconds, 12)
+        per_try_timeout = min(self.settings.timeout_seconds, 15)
 
-        for model in candidate_models:
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={self.settings.gemini_api_key}"
-            try:
-                logger.info(f"Đang gửi yêu cầu Vision OCR tới Google Gemini ({model})...")
-                response = requests.post(
-                    url,
-                    json=payload,
-                    timeout=per_try_timeout,
-                    headers={"Content-Type": "application/json"}
-                )
+        for key_info in key_candidates:
+            api_key = key_info["key_value"]
+            key_alias = key_info.get("key_alias", "Gemini Key")
+            key_id = key_info.get("id")
 
-                if response.status_code == 200:
-                    data = response.json()
-                    candidates = data.get("candidates", [])
-                    if candidates:
-                        parts = candidates[0].get("content", {}).get("parts", [])
-                        if parts:
-                            return parts[0].get("text", "").strip()
-                    return ""
-                
-                # Neu model bi loi 404, 503 hoac 429, ghi log va chuyen sang model ke tiep
-                status_code = response.status_code
-                logger.warning(f"Mô hình {model} phản hồi mã lỗi {status_code}: {response.text[:120]}. Đang chuyển mô hình dự phòng...")
-                last_err_msg = f"HTTP {status_code}: {response.text[:100]}"
-            except requests.exceptions.Timeout:
-                logger.warning(f"Mô hình {model} bị Read Timeout sau {per_try_timeout}s. Đang chuyển sang mô hình siêu tốc dự phòng...")
-                last_err_msg = f"Timeout sau {per_try_timeout}s"
-            except Exception as e:
-                logger.warning(f"Lỗi kết nối khi gọi {model}: {e}. Đang chuyển mô hình dự phòng...")
-                last_err_msg = str(e)
+            # Xác định các model candidate cho key này (dùng các model v1beta đang hoạt động)
+            pref_model = key_info.get("model_name") or self.settings.gemini_model or "gemini-flash-lite-latest"
+            if "1.5" in pref_model:
+                pref_model = "gemini-flash-lite-latest"
+            models_to_try = [pref_model]
+            for m in ["gemini-flash-lite-latest", "gemini-2.5-flash", "gemini-2.0-flash"]:
+                if m not in models_to_try:
+                    models_to_try.append(m)
 
-        raise RuntimeError(f"Tất cả các mô hình Gemini Vision đều phản hồi chậm hoặc quá tải. Chi tiết lỗi cuối: {last_err_msg}")
+            for model in models_to_try:
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+                try:
+                    logger.info(f"Tour Xoay: Đang gọi Gemini ({model}) bằng key '{key_alias}'...")
+                    response = requests.post(
+                        url,
+                        json=payload,
+                        timeout=per_try_timeout,
+                        headers={"Content-Type": "application/json"}
+                    )
+
+                    if response.status_code == 200:
+                        data = response.json()
+                        candidates = data.get("candidates", [])
+                        if candidates:
+                            parts = candidates[0].get("content", {}).get("parts", [])
+                            if parts:
+                                extracted_text = parts[0].get("text", "").strip()
+                                if key_id:
+                                    KeyTourManager.record_usage(key_id)
+                                logger.info(f"Tour Xoay: Bóc tách OCR thành công bằng key '{key_alias}' ({model}).")
+                                return extracted_text
+                        return ""
+
+                    status_code = response.status_code
+                    last_err_msg = f"Key '{key_alias}' - Model {model} phản hồi HTTP {status_code}: {response.text[:100]}"
+                    logger.warning(last_err_msg)
+
+                    # Nếu lỗi 400 API_KEY_INVALID, tự động vô hiệu hóa key hỏng khỏi tour xoay
+                    if status_code == 400 and ("API_KEY_INVALID" in response.text or "key not valid" in response.text.lower()):
+                        if key_id:
+                            toggle_api_key_status(key_id)
+                            logger.warning(f"Đã tự động loại bỏ key không hợp lệ khỏi tour: '{key_alias}' ({key_id})")
+                        break
+
+                    # Nếu lỗi 429 hoặc 403, chuyển sang key tiếp theo trong tour
+                    if status_code in [429, 403]:
+                        logger.info(f"Key '{key_alias}' quá tải/hết quota (HTTP {status_code}). Đang xoay tour sang key tiếp theo...")
+                        break
+
+                except requests.exceptions.Timeout:
+                    last_err_msg = f"Key '{key_alias}' - Timeout sau {per_try_timeout}s"
+                    logger.warning(last_err_msg)
+                except Exception as e:
+                    last_err_msg = f"Key '{key_alias}' - Lỗi kết nối: {e}"
+                    logger.warning(last_err_msg)
+
+        raise RuntimeError(f"Tất cả các API Key trong Tour Xoay đều gặp sự cố. Chi tiết lỗi cuối: {last_err_msg}")
 
     def _call_aws_bedrock_vision(self, image_bytes: bytes) -> str:
         """Gửi ảnh đến AWS Bedrock sử dụng Converse API với mô hình đa phương thức."""
@@ -235,33 +305,4 @@ class OCRDispatcher:
             raise RuntimeError(f"AWS Bedrock không trả về kết quả hoặc bị từ chối quyền truy cập ({target_model}).")
         return res.strip()
 
-    def _generate_bedrock_fallback_markdown(self, image_bytes: bytes) -> str:
-        """Tự động phân tích và tạo cấu trúc Markdown khi AWS Bedrock đang trong chu kỳ kích hoạt hạn mức tài khoản."""
-        import io
-        from PIL import Image
-        w, h = 0, 0
-        try:
-            pil_img = Image.open(io.BytesIO(image_bytes))
-            w, h = pil_img.size
-        except Exception:
-            pass
-
-        return (
-            "### NỘI DUNG TÀI LIỆU BÓC TÁCH (AWS BEDROCK FOUNDATION MODEL)\n\n"
-            "> [!NOTE] Kênh xử lý: AWS Bedrock On-Demand (Amazon Nova Lite - Pay-as-you-go)\n"
-            "> Bản quét tài liệu đã được tiếp nhận và xử lý qua hạ tầng Amazon Bedrock. "
-            "Dữ liệu hình ảnh được bảo toàn nguyên vẹn 100% và hiển thị trực quan ở khung bên trái.\n\n"
-            "| Thông số kiểm soát | Chi tiết ghi nhận |\n"
-            "| :--- | :--- |\n"
-            f"| **Kích thước bản quét** | {w} x {h} px |\n"
-            "| **Mô hình tính toán** | Amazon Nova Lite (`amazon.nova-lite-v1:0`) |\n"
-            "| **Mô hình định giá** | AWS Pay-as-you-go (Chỉ tính cước khi có yêu cầu) |\n"
-            "| **Trạng thái tiến trình** | COMPLETED (Hoàn tất bóc tách) |\n\n"
-            "#### Bảng đối soát dữ liệu tài liệu:\n\n"
-            "| Hạng mục | Quy chuẩn | Kết quả đối soát |\n"
-            "| :--- | :--- | :--- |\n"
-            "| Định dạng gốc | Hình ảnh tài liệu số / Bản scan | Hợp lệ (Đã nạp vào bộ đệm) |\n"
-            "| Độ phân giải | Chuẩn DPI cao | Đạt tiêu chuẩn phân tích |\n"
-            "| Mã hóa lưu trữ | AWS S3 SSE-S3 | uploads/ & outputs/ |\n"
-        )
 

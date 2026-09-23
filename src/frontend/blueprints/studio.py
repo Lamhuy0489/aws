@@ -198,6 +198,15 @@ def api_process():
         except Exception as aws_sync_err:
             logger.info(f"Lưu trữ AWS Cloud được bỏ qua hoặc ghi nhận nhẹ: {aws_sync_err}")
 
+        # Nếu người dùng chọn mô hình AWS nhưng Bedrock chưa thể phục vụ (phải failover sang Gemini):
+        # Tự động hoàn lại hạn mức gọi AWS để bảo vệ quyền lợi người dùng
+        if is_aws_model and engine.ocr_dispatcher.last_engine_used != "aws_bedrock":
+            try:
+                refund_user_aws_usage(user["id"], limit=20)
+                logger.info(f"Đã hoàn trả 1 lượt gọi AWS cho user {user['id']} vì hệ thống kích hoạt Failover sang Gemini Vision.")
+            except Exception as ref_err:
+                logger.warning(f"Lỗi khi hoàn trả hạn mức: {ref_err}")
+
         # Lấy thông tin hạn mức AWS cập nhật nhất của người dùng
         user_quota = get_user_aws_quota(user["id"], limit=20)
 

@@ -52,16 +52,19 @@ class HybridDocumentEngine:
 
         use_fast_path = self.settings.fast_path_enabled
 
+        is_multi_page = len(pages) > 1
+
         for page in pages:
             should_use_fast = use_fast_path and (not page.is_scanned)
 
             if should_use_fast:
-                # Tầng 1: Sử dụng kết quả bóc tách trực tiếp (Fast-Path)
                 digital_count += 1
-                page_header = f"<!-- Trang {page.page_number} (Văn bản số) -->\n\n"
-                assembled_markdown.append(page_header + page.markdown_content)
+                content = page.markdown_content.strip()
+                if is_multi_page:
+                    assembled_markdown.append(f"<!-- Trang {page.page_number} -->\n\n{content}")
+                else:
+                    assembled_markdown.append(content)
             else:
-                # Tầng 2: Kích hoạt mô hình Vision OCR cho trang scan hoặc khi tắt Fast-Path
                 scanned_count += 1
                 logger.info(f"Kích hoạt Tầng 2 OCR cho trang {page.page_number} (is_scanned={page.is_scanned}, fast_path={use_fast_path})...")
 
@@ -74,9 +77,11 @@ class HybridDocumentEngine:
                         logger.error(f"Lỗi khi OCR trang {page.page_number}: {e}")
                         ocr_text = f"[Lỗi OCR trên trang {page.page_number}: {str(e)}]"
 
-                tag_title = "Ảnh scan - OCR" if page.is_scanned else "Vision OCR"
-                page_header = f"<!-- Trang {page.page_number} ({tag_title}) -->\n\n"
-                assembled_markdown.append(page_header + (ocr_text or page.markdown_content))
+                content = (ocr_text or page.markdown_content).strip()
+                if is_multi_page:
+                    assembled_markdown.append(f"<!-- Trang {page.page_number} -->\n\n{content}")
+                else:
+                    assembled_markdown.append(content)
 
         full_md = "\n\n---\n\n".join(assembled_markdown)
         page_images = [p.preview_png_b64 for p in pages if p.preview_png_b64]
@@ -96,18 +101,7 @@ class HybridDocumentEngine:
     def _process_single_image(self, image_bytes: bytes, filename: str, document_id: str) -> DocumentResult:
         import base64
         logger.info(f"Xử lý tệp hình ảnh đơn lẻ: {filename} thông qua Tầng 2 OCR...")
-        ocr_text = ""
-        try:
-            ocr_text = self.ocr_dispatcher.ocr_image(image_bytes)
-        except Exception as e:
-            logger.error(f"Lỗi khi OCR tệp hình ảnh {filename}: {e}")
-            ocr_text = (
-                f"> [!WARNING]\n"
-                f"> **Không thể bóc tách nội dung hình ảnh do sự cố dịch vụ OCR ngoại vi:**\n"
-                f"> {str(e)}\n\n"
-                f"Ảnh gốc đã được tải lên thành công và hiển thị ở khung bên trái. "
-                f"Quý khách có thể thử lại sau ít phút hoặc đổi sang chế độ Kaggle / Giả lập nội bộ."
-            )
+        ocr_text = self.ocr_dispatcher.ocr_image(image_bytes).strip()
 
         b64_img = base64.b64encode(image_bytes).decode("utf-8")
         page = ParsedPage(
