@@ -6,6 +6,7 @@
 let currentProcessedResult = null;
 let currentPageIndex = 0;
 let currentActiveDocTab = "original"; // "original" hoac "translated"
+let currentViewMode = "preview"; // "preview" hoac "editor"
 let pipelineInterval = null;
 
 window.initStudioPage = () => {
@@ -19,6 +20,54 @@ window.initStudioPage = () => {
 
   // Khoi tao cac 2D Vector Icons chuan ky thuat
   initStudioIcons();
+
+  // Quan ly han muc su dung AWS Bedrock
+  async function fetchAwsQuota() {
+    try {
+      const resp = await fetch("/api/studio/quota");
+      if (!resp.ok) return;
+      const data = await resp.json();
+      if (data && data.aws_quota) {
+        updateAwsQuotaUI(data.aws_quota);
+      }
+    } catch (e) {
+      console.warn("Khong the tai han muc AWS:", e);
+    }
+  }
+
+  function updateAwsQuotaUI(quota) {
+    const quotaText = document.getElementById("awsQuotaText");
+    if (!quotaText || !quota) return;
+    const remaining = quota.remaining !== undefined ? quota.remaining : 20;
+    const limit = quota.limit || 20;
+    quotaText.textContent = `${remaining} / ${limit} còn lại`;
+    if (remaining <= 0) {
+      quotaText.style.color = "var(--color-destructive, #ef4444)";
+      quotaText.textContent = `0 / ${limit} (Hết lượt hôm nay)`;
+    } else if (remaining <= 5) {
+      quotaText.style.color = "#f59e0b";
+    } else {
+      quotaText.style.color = "var(--color-primary, #2563eb)";
+    }
+  }
+
+  // Nap han muc AWS ngay khi mo trang
+  fetchAwsQuota();
+
+  const modelChoiceEl = document.getElementById("modelChoice");
+  if (modelChoiceEl) {
+    modelChoiceEl.addEventListener("change", () => {
+      const val = modelChoiceEl.value;
+      const quotaBox = document.getElementById("awsQuotaBox");
+      if (quotaBox) {
+        if (val === "aws-bedrock") {
+          quotaBox.style.opacity = "1";
+        } else {
+          quotaBox.style.opacity = "0.75";
+        }
+      }
+    });
+  }
 
   let selectedFile = null;
 
@@ -233,6 +282,7 @@ window.initStudioPage = () => {
     if (emptyGuide) emptyGuide.style.display = "block";
     const pipelineCard = document.getElementById("pipelineProgressCard");
     if (pipelineCard) pipelineCard.style.display = "none";
+    window.switchViewMode("preview");
     showToast("Đã đóng tài liệu và làm mới vùng làm việc", "info");
   };
 
@@ -286,12 +336,23 @@ window.initStudioPage = () => {
 
         const data = await response.json();
         if (!response.ok) {
+          if (response.status === 429) {
+            if (data.aws_quota) updateAwsQuotaUI(data.aws_quota);
+            throw new Error(data.error || "Bạn đã dùng hết hạn mức 20 lượt gọi AWS Bedrock hôm nay.");
+          }
           throw new Error(data.error || "Lỗi bóc tách tài liệu");
         }
 
         currentProcessedResult = data;
         currentPageIndex = 0;
         currentActiveDocTab = "original";
+
+        // Cap nhat han muc AWS neu co trong ket qua tra ve
+        if (data.aws_quota) {
+          updateAwsQuotaUI(data.aws_quota);
+        } else {
+          fetchAwsQuota();
+        }
 
         // Luu vao storage an toan de bao toan trang thai khi chuyen tab hoac tai lai trang
         saveDocState(data);
@@ -303,6 +364,7 @@ window.initStudioPage = () => {
         if (window.AppIcons) window.AppIcons.initAutoIcons();
         showToast("Bóc tách tài liệu thành công", "success");
       } catch (err) {
+        fetchAwsQuota();
         showPipelineError(err.message);
         showToast("Lỗi xử lý: " + err.message, "error");
         if (emptyGuide && (!currentProcessedResult)) emptyGuide.style.display = "block";
@@ -358,6 +420,16 @@ window.initStudioPage = () => {
       renderDocSheetContent(data.full_markdown);
     }
 
+    // Dong bo noi dung vao trinh chinh sua Markdown neu dang o che do Editor
+    if (currentViewMode === "editor") {
+      const editorInput = document.getElementById("markdownEditorInput");
+      if (editorInput) {
+        editorInput.value = (currentActiveDocTab === "translated" && data.translated_markdown)
+          ? data.translated_markdown
+          : (data.full_markdown || "");
+      }
+    }
+
     if (window.AppIcons) window.AppIcons.initAutoIcons();
     if (shouldScroll) {
       resultViewer.scrollIntoView({ behavior: "smooth" });
@@ -366,6 +438,7 @@ window.initStudioPage = () => {
 
   function renderDocSheetContent(markdownText) {
     const docSheet = document.getElementById("docSheetContent");
+    if (!docSheet) return;
     if (window.marked && window.marked.parse) {
       docSheet.innerHTML = window.marked.parse(markdownText);
     } else {
@@ -426,7 +499,7 @@ window.initStudioPage = () => {
           ? window.marked.parse(currentProcessedResult.full_markdown)
           : `<pre style="white-space: pre-wrap; font-family: monospace;">${escapeHtml(currentProcessedResult.full_markdown)}</pre>`;
       }
-      docSheet.innerHTML = cachedOriginalHtml || "";
+      if (docSheet) docSheet.innerHTML = cachedOriginalHtml || "";
     } else {
       tabTrans.classList.add("active");
       tabOrig.classList.remove("active");
@@ -436,14 +509,119 @@ window.initStudioPage = () => {
             ? window.marked.parse(currentProcessedResult.translated_markdown)
             : `<pre style="white-space: pre-wrap; font-family: monospace;">${escapeHtml(currentProcessedResult.translated_markdown)}</pre>`;
         }
-        docSheet.innerHTML = cachedTranslatedHtml;
+        if (docSheet) docSheet.innerHTML = cachedTranslatedHtml;
       } else {
-        docSheet.innerHTML = `
-          <div style="text-align: center; padding: 60px 20px; color: var(--color-muted-foreground);">
-            <p style="font-size: 14px; margin-bottom: 12px;">Tài liệu này chưa có bản dịch.</p>
-            <p style="font-size: 13px;">Vui lòng chọn ngôn ngữ đích bên trên và bấm <strong>Dịch Thuật</strong> để kích hoạt Gemini AI.</p>
-          </div>
-        `;
+        if (docSheet) {
+          docSheet.innerHTML = `
+            <div style="text-align: center; padding: 60px 20px; color: var(--color-muted-foreground);">
+              <p style="font-size: 14px; margin-bottom: 12px;">Tài liệu này chưa có bản dịch.</p>
+              <p style="font-size: 13px;">Vui lòng chọn ngôn ngữ đích bên trên và bấm <strong>Dịch Thuật</strong> để kích hoạt Gemini AI.</p>
+            </div>
+          `;
+        }
+      }
+    }
+
+    // Dong bo noi dung neu dang o che do Editor
+    if (currentViewMode === "editor") {
+      const editorInput = document.getElementById("markdownEditorInput");
+      if (editorInput) {
+        editorInput.value = (tabName === "translated" && currentProcessedResult.translated_markdown)
+          ? currentProcessedResult.translated_markdown
+          : (currentProcessedResult.full_markdown || "");
+      }
+    }
+  };
+
+  // Chuyen doi che do Xem Truoc (Preview) va Chinh Sua Markdown (Editor)
+  window.switchViewMode = (mode) => {
+    currentViewMode = mode;
+    const tabPrev = document.getElementById("tabModePreview");
+    const tabEdit = document.getElementById("tabModeEditor");
+    const docSheet = document.getElementById("docSheetContent");
+    const editorContainer = document.getElementById("markdownEditorContainer");
+    const editorInput = document.getElementById("markdownEditorInput");
+
+    if (mode === "editor") {
+      if (tabEdit) tabEdit.classList.add("active");
+      if (tabPrev) tabPrev.classList.remove("active");
+      if (docSheet) docSheet.style.display = "none";
+      if (editorContainer) editorContainer.style.display = "flex";
+
+      if (editorInput && currentProcessedResult) {
+        const currentMd = (currentActiveDocTab === "translated" && currentProcessedResult.translated_markdown)
+          ? currentProcessedResult.translated_markdown
+          : (currentProcessedResult.full_markdown || "");
+        editorInput.value = currentMd;
+      }
+    } else {
+      if (tabPrev) tabPrev.classList.add("active");
+      if (tabEdit) tabEdit.classList.remove("active");
+      if (editorContainer) editorContainer.style.display = "none";
+      if (docSheet) docSheet.style.display = "block";
+
+      if (currentProcessedResult) {
+        const currentMd = (currentActiveDocTab === "translated" && currentProcessedResult.translated_markdown)
+          ? currentProcessedResult.translated_markdown
+          : (currentProcessedResult.full_markdown || "");
+        renderDocSheetContent(currentMd);
+      }
+    }
+    if (window.AppIcons) window.AppIcons.initAutoIcons();
+  };
+
+  // Luu noi dung Markdown da chinh sua
+  window.saveMarkdownContent = async () => {
+    if (!currentProcessedResult) {
+      showToast("Không tìm thấy dữ liệu tài liệu để lưu", "error");
+      return;
+    }
+
+    const editorInput = document.getElementById("markdownEditorInput");
+    if (!editorInput) return;
+    const updatedText = editorInput.value;
+
+    const saveBtn = document.getElementById("btnSaveMarkdown");
+    if (saveBtn) {
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = `<span>Đang lưu...</span>`;
+    }
+
+    try {
+      const docId = currentProcessedResult.document_id;
+      const resp = await fetch(`/api/studio/document/${encodeURIComponent(docId)}/markdown`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          markdown: updatedText,
+          tab_type: currentActiveDocTab
+        })
+      });
+
+      const resData = await resp.json();
+      if (!resp.ok) {
+        throw new Error(resData.error || "Không thể lưu nội dung Markdown");
+      }
+
+      if (currentActiveDocTab === "translated") {
+        currentProcessedResult.translated_markdown = updatedText;
+        cachedTranslatedHtml = null;
+      } else {
+        currentProcessedResult.full_markdown = updatedText;
+        cachedOriginalHtml = null;
+      }
+
+      saveDocState(currentProcessedResult);
+      renderDocSheetContent(updatedText);
+
+      showToast("Đã lưu nội dung Markdown thành công", "success");
+    } catch (err) {
+      showToast("Lỗi lưu Markdown: " + err.message, "error");
+    } finally {
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = `<span data-icon="check" data-icon-size="14"></span> <span>Lưu Thay Đổi</span>`;
+        if (window.AppIcons) window.AppIcons.initAutoIcons();
       }
     }
   };

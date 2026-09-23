@@ -13,7 +13,11 @@ from src.backend.database.db import (
     create_document,
     get_document_by_id,
     get_documents_by_user,
-    update_document_translation
+    update_document_translation,
+    update_document_markdown,
+    get_user_aws_quota,
+    increment_user_aws_usage,
+    refund_user_aws_usage
 )
 from src.backend.auth.security import get_current_user, login_required, login_required_view
 from src.backend.llm.key_tour_manager import KeyTourManager
@@ -47,6 +51,23 @@ def api_process():
     model_choice = request.form.get("model_choice", "auto")
     doc_lang = request.form.get("language", "vi")
     fast_path = request.form.get("fast_path", "true").lower() == "true"
+
+    # Kiểm tra Rate Limit cho mô hình AWS Native (chính xác 20 lượt / ngày / tài khoản)
+    is_aws_model = model_choice in ["aws-bedrock", "aws-native"]
+    aws_quota_deducted = False
+
+    if is_aws_model:
+        current_quota = get_user_aws_quota(user["id"], limit=20)
+        if current_quota.get("remaining", 0) <= 0:
+            return jsonify({
+                "error": "Bạn đã sử dụng hết 20 lượt gọi mô hình AWS Bedrock trong ngày hôm nay. Hạn mức sẽ được làm mới vào ngày mai. Bạn có thể chọn mô hình Google Gemini hoặc Kaggle để tiếp tục bóc tách không giới hạn.",
+                "code": "QUOTA_EXCEEDED",
+                "aws_quota": current_quota
+            }), 429
+
+        # Tạm tính 1 lượt sử dụng cho AWS
+        increment_user_aws_usage(user["id"], limit=20)
+        aws_quota_deducted = True
 
     # Xac dinh che do bóc tách dua tren lua chon mo hinh
     mode = "STANDALONE"
@@ -177,6 +198,9 @@ def api_process():
         except Exception as aws_sync_err:
             logger.info(f"Lưu trữ AWS Cloud được bỏ qua hoặc ghi nhận nhẹ: {aws_sync_err}")
 
+        # Lấy thông tin hạn mức AWS cập nhật nhất của người dùng
+        user_quota = get_user_aws_quota(user["id"], limit=20)
+
         return jsonify({
             "document_id": final_doc_id,
             "filename": result.filename,
@@ -185,9 +209,17 @@ def api_process():
             "scanned_pages_count": result.scanned_pages_count,
             "full_markdown": result.full_markdown,
             "processing_time_seconds": result.processing_time_seconds,
-            "page_images": result.page_images
+            "page_images": result.page_images,
+            "aws_quota": user_quota
         })
     except Exception as e:
+        if aws_quota_deducted:
+            try:
+                refund_user_aws_usage(user["id"], limit=20)
+                logger.info(f"Đã hoàn trả hạn mức 1 lượt gọi AWS cho user {user['id']} do bóc tách phát sinh lỗi.")
+            except Exception as ref_err:
+                logger.warning(f"Lỗi khi hoàn trả hạn mức AWS: {ref_err}")
+
         logger.error(f"Loi xu ly tai lieu: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
@@ -331,4 +363,42 @@ def api_active_document():
             return jsonify({"document": latest})
 
     return jsonify({"document": None})
+
+@studio_bp.route("/api/studio/quota", methods=["GET"])
+@login_required
+def api_get_quota():
+    """Lay thong tin han muc su dung mo hinh AWS Bedrock trong ngay cua nguoi dung."""
+    user = get_current_user()
+    if not user:
+        return jsonify({"error": "Vui long dang nhap"}), 401
+    quota = get_user_aws_quota(user["id"], limit=20)
+    return jsonify({"aws_quota": quota})
+
+@studio_bp.route("/api/studio/document/<doc_id>/markdown", methods=["POST", "PUT"])
+@login_required
+def api_update_markdown(doc_id):
+    """Cap nhat noi dung van ban Markdown cua tai lieu tu giao dien Trinh chinh sua Tab Editor."""
+    user = get_current_user()
+    if not user:
+        return jsonify({"error": "Vui long dang nhap"}), 401
+
+    data = request.get_json() or {}
+    markdown_content = data.get("markdown", "")
+    tab_type = data.get("tab_type", "original")  # "original" hoac "translated"
+
+    if tab_type == "translated":
+        success = update_document_translation(doc_id, user["id"], markdown_content)
+    else:
+        success = update_document_markdown(doc_id, user["id"], markdown_content)
+
+    if not success:
+        return jsonify({"error": "Khong tim thay tai lieu hoac ban khong co quyen cap nhat"}), 404
+
+    return jsonify({
+        "success": True,
+        "document_id": doc_id,
+        "tab_type": tab_type,
+        "message": "Cap nhat noi dung Markdown thanh cong"
+    })
+
 

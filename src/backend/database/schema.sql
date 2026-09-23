@@ -53,3 +53,14 @@ CREATE TABLE IF NOT EXISTS user_settings (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+-- Bảng lưu trữ hạn mức sử dụng theo ngày của người dùng (Rate Limit AWS)
+CREATE TABLE IF NOT EXISTS user_daily_usage (
+    user_id TEXT NOT NULL,
+    usage_date TEXT NOT NULL,              -- Định dạng YYYY-MM-DD
+    aws_requests_count INTEGER DEFAULT 0,  -- Số lượt gọi mô hình AWS Bedrock trong ngày
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY(user_id, usage_date),
+    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+

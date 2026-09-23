@@ -73,6 +73,21 @@ def init_db():
         except Exception as e:
             logger.warning(f"Không thể thêm cột translated_markdown: {e}")
 
+    # Đảm bảo bảng user_daily_usage tồn tại
+    try:
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS user_daily_usage (
+                user_id TEXT NOT NULL,
+                usage_date TEXT NOT NULL,
+                aws_requests_count INTEGER DEFAULT 0,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY(user_id, usage_date),
+                FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+            )
+        """)
+    except Exception as e:
+        logger.warning(f"Không thể tạo bảng user_daily_usage: {e}")
+
     conn.commit()
     conn.close()
     logger.info(f"Khởi tạo CSDL SQLite hoàn tất tại: {DB_PATH}")
@@ -211,6 +226,76 @@ def update_document_translation(doc_id: str, user_id: str, translated_markdown: 
     affected = cursor.rowcount
     conn.close()
     return affected > 0
+
+def update_document_markdown(doc_id: str, user_id: str, markdown: str) -> bool:
+    """Cập nhật nội dung văn bản Markdown gốc của tài liệu vào CSDL."""
+    conn = get_db_connection()
+    cursor = conn.execute(
+        "UPDATE documents SET full_markdown = ? WHERE id = ? AND user_id = ?",
+        (markdown, doc_id, user_id)
+    )
+    conn.commit()
+    affected = cursor.rowcount
+    conn.close()
+    return affected > 0
+
+# --- Các hàm quản lý Hạn mức sử dụng AWS Bedrock (Rate Limit) ---
+
+def _get_current_date_str() -> str:
+    """Lấy chuỗi ngày hiện tại định dạng YYYY-MM-DD."""
+    from datetime import datetime
+    return datetime.now().strftime("%Y-%m-%d")
+
+def get_user_aws_quota(user_id: str, limit: int = 20) -> dict:
+    """Lấy thông tin hạn mức gọi mô hình AWS Bedrock trong ngày của người dùng."""
+    today = _get_current_date_str()
+    conn = get_db_connection()
+    row = conn.execute(
+        "SELECT aws_requests_count FROM user_daily_usage WHERE user_id = ? AND usage_date = ?",
+        (user_id, today)
+    ).fetchone()
+    conn.close()
+
+    used = row["aws_requests_count"] if row else 0
+    remaining = max(0, limit - used)
+    return {
+        "used": used,
+        "limit": limit,
+        "remaining": remaining,
+        "date": today,
+        "is_exceeded": remaining <= 0
+    }
+
+def increment_user_aws_usage(user_id: str, limit: int = 20) -> dict:
+    """Ghi nhận tăng 1 lượt gọi mô hình AWS Bedrock của người dùng trong ngày."""
+    today = _get_current_date_str()
+    conn = get_db_connection()
+    conn.execute(
+        """INSERT INTO user_daily_usage (user_id, usage_date, aws_requests_count, updated_at)
+           VALUES (?, ?, 1, CURRENT_TIMESTAMP)
+           ON CONFLICT(user_id, usage_date) DO UPDATE SET 
+               aws_requests_count = aws_requests_count + 1,
+               updated_at = CURRENT_TIMESTAMP""",
+        (user_id, today)
+    )
+    conn.commit()
+    conn.close()
+    return get_user_aws_quota(user_id, limit=limit)
+
+def refund_user_aws_usage(user_id: str, limit: int = 20) -> dict:
+    """Hoàn lại 1 lượt gọi mô hình AWS Bedrock khi xảy ra lỗi bóc tách."""
+    today = _get_current_date_str()
+    conn = get_db_connection()
+    conn.execute(
+        """UPDATE user_daily_usage 
+           SET aws_requests_count = MAX(0, aws_requests_count - 1),
+               updated_at = CURRENT_TIMESTAMP
+           WHERE user_id = ? AND usage_date = ?""",
+        (user_id, today)
+    )
+    conn.commit()
+    conn.close()
+    return get_user_aws_quota(user_id, limit=limit)
 
 # --- Các hàm thao tác API Key & Xoay Tour ---
 
