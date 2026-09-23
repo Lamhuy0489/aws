@@ -62,6 +62,18 @@
         Tạo Tài Khoản Mới
       </button>
     </form>
+
+    <!-- Phan Cach Hoac -->
+    <div style="display: flex; align-items: center; margin: var(--space-lg) 0; color: var(--color-muted-foreground); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">
+      <div style="flex: 1; height: 1px; background: var(--color-border);"></div>
+      <span style="padding: 0 var(--space-sm);" data-i18n="lbl_or_separator">Hoặc tiếp tục với</span>
+      <div style="flex: 1; height: 1px; background: var(--color-border);"></div>
+    </div>
+
+    <!-- Nut Dang Nhap Google qua AWS Cognito -->
+    <a href="/api/auth/cognito/login" id="btnCognitoGoogleLogin" class="btn btn-secondary" style="width: 100%; display: flex; align-items: center; justify-content: center; font-weight: 600; text-decoration: none; padding: 10px 16px; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-card); color: var(--color-foreground); transition: all 0.2s ease;">
+      <span data-i18n="btn_login_google">Đăng nhập bằng tài khoản Google (AWS Cognito)</span>
+    </a>
   </div>
 </div>
 {% endblock %}

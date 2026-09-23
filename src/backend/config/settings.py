@@ -60,6 +60,30 @@ class AppSettings(BaseModel):
         default=120,
         description="Thời gian chờ tối đa cho các cuộc gọi API ngoại vi"
     )
+    cognito_region: str = Field(
+        default="ap-southeast-1",
+        description="Vùng AWS Cognito"
+    )
+    cognito_user_pool_id: Optional[str] = Field(
+        default="ap-southeast-1_dNJkc4IWG",
+        description="Cognito User Pool ID"
+    )
+    cognito_app_client_id: Optional[str] = Field(
+        default="25tat78efli48ghdg3t6d9cul1",
+        description="Cognito App Client ID"
+    )
+    cognito_app_client_secret: Optional[str] = Field(
+        default="smd2157sug894ccm0aojnu98u4umh7ba28kitl1i67j98ra5tjb",
+        description="Cognito App Client Secret"
+    )
+    cognito_domain: Optional[str] = Field(
+        default="https://ap-southeast-1dnjkc4iwg.auth.ap-southeast-1.amazoncognito.com",
+        description="Cognito Hosted UI Domain"
+    )
+    cognito_redirect_uri: str = Field(
+        default="http://localhost:5000/api/auth/cognito/callback",
+        description="Cognito OAuth Redirect Callback URI"
+    )
 
 def load_settings_from_ssm(parameter_name: Optional[str] = None, region: str = "ap-southeast-1") -> Optional[dict]:
     """Tải chuỗi cấu hình JSON từ AWS Systems Manager Parameter Store."""
@@ -103,7 +127,13 @@ def get_settings() -> AppSettings:
         "AWS_NATIVE_MODE_ENABLED": "aws_native_mode_enabled",
         "AWS_BEDROCK_MODEL": "aws_bedrock_model",
         "SSM_PARAMETER_NAME": "ssm_parameter_name",
-        "TIMEOUT_SECONDS": "timeout_seconds"
+        "TIMEOUT_SECONDS": "timeout_seconds",
+        "COGNITO_REGION": "cognito_region",
+        "COGNITO_USER_POOL_ID": "cognito_user_pool_id",
+        "COGNITO_APP_CLIENT_ID": "cognito_app_client_id",
+        "COGNITO_APP_CLIENT_SECRET": "cognito_app_client_secret",
+        "COGNITO_DOMAIN": "cognito_domain",
+        "COGNITO_REDIRECT_URI": "cognito_redirect_uri"
     }
     
     for env_k, cfg_k in env_mappings.items():

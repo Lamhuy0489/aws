@@ -91,6 +91,12 @@ def get_user_by_id(user_id: str) -> Optional[dict]:
     conn.close()
     return dict(row) if row else None
 
+def get_user_by_email(email: str) -> Optional[dict]:
+    conn = get_db_connection()
+    row = conn.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
+    conn.close()
+    return dict(row) if row else None
+
 def create_user(username: str, email: str, password: str, role: str = "user") -> dict:
     conn = get_db_connection()
     user_id = str(uuid.uuid4())[:8]
@@ -102,6 +108,32 @@ def create_user(username: str, email: str, password: str, role: str = "user") ->
     conn.commit()
     conn.close()
     return {"id": user_id, "username": username, "email": email, "role": role}
+
+def get_or_create_cognito_user(email: str, name: Optional[str] = None, sub: Optional[str] = None) -> dict:
+    """Đồng bộ hoặc khởi tạo tài khoản người dùng đăng nhập qua AWS Cognito Google IdP."""
+    conn = get_db_connection()
+    row = conn.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
+    if row:
+        conn.close()
+        return dict(row)
+
+    user_id = str(uuid.uuid4())[:8]
+    base_username = (email.split("@")[0] if email else f"google_user_{user_id}").lower()
+    username = base_username
+    counter = 1
+    while conn.execute("SELECT 1 FROM users WHERE username = ?", (username,)).fetchone():
+        username = f"{base_username}_{counter}"
+        counter += 1
+
+    dummy_pw_hash = generate_password_hash(str(uuid.uuid4()))
+    conn.execute(
+        "INSERT INTO users (id, username, email, password_hash, role) VALUES (?, ?, ?, ?, ?)",
+        (user_id, username, email, dummy_pw_hash, "user")
+    )
+    conn.commit()
+    conn.close()
+    logger.info(f"Đã tạo tài khoản người dùng mới từ AWS Cognito: {username} ({email})")
+    return {"id": user_id, "username": username, "email": email, "role": "user"}
 
 # --- Các hàm thao tác Document (Kho lưu trữ tài liệu) ---
 

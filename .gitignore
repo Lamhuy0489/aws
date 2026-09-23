@@ -46,6 +46,7 @@ venv.bak/
 *.key
 credentials
 secrets.json
+client_secret_*.json
 *.tfvars
 *.tfvars.json
 
