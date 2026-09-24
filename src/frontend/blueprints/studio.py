@@ -272,11 +272,19 @@ def api_translate():
 
     try:
         if model_name and ("bedrock" in model_name.lower() or "nova" in model_name.lower()):
-            translated_md = DocumentTranslator.translate_with_bedrock(
-                markdown_text=markdown_text,
-                target_lang=target_lang,
-                model_id=model_name if ("amazon." in model_name or "anthropic." in model_name) else None
-            )
+            try:
+                translated_md = DocumentTranslator.translate_with_bedrock(
+                    markdown_text=markdown_text,
+                    target_lang=target_lang,
+                    model_id=model_name if ("amazon." in model_name or "anthropic." in model_name) else None
+                )
+            except Exception as b_err:
+                logger.warning(f"Bedrock translation failed ({b_err}), falling back to Gemini...")
+                translated_md = DocumentTranslator.translate_markdown(
+                    markdown_text=markdown_text,
+                    target_lang=target_lang,
+                    model_name="gemini-flash-lite-latest"
+                )
         else:
             translated_md = DocumentTranslator.translate_markdown(
                 markdown_text=markdown_text,

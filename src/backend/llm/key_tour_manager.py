@@ -14,12 +14,18 @@ class KeyTourManager:
         Ưu tiên key đang hoạt động (is_active = 1) và có số lượt gọi (usage_count) thấp nhất.
         """
         active_keys = get_active_keys_by_provider(provider)
-        if not active_keys:
-            logger.warning(f"Không tìm thấy API Key nào đang hoạt động cho nhà cung cấp: {provider}")
+        real_keys = [
+            k for k in active_keys
+            if not k["key_value"].startswith("AIzaSy_DEMO")
+            and not k["key_value"].startswith("AIzaSy_TEST")
+            and not k["key_value"].startswith("gsk_DEMO")
+        ]
+        if not real_keys:
+            logger.warning(f"Không tìm thấy API Key thực tế nào đang hoạt động cho nhà cung cấp: {provider}")
             return None
 
         # Chọn key có lượt sử dụng ít nhất
-        selected_key = active_keys[0]
+        selected_key = real_keys[0]
         logger.info(f"Xoay tour: Chọn key '{selected_key['key_alias']}' (Lượt dùng hiện tại: {selected_key['usage_count']})")
         return selected_key
 

@@ -52,9 +52,9 @@ def init_db():
         logger.info("Khởi tạo danh sách API Keys mẫu cho cơ chế xoay tour...")
         keys_data = [
             (str(uuid.uuid4())[:8], "kaggle", "Kaggle TPU Qwen2.5-VL", "https://hybrid-ocr.trycloudflare.com", "Qwen2.5-VL-7B", "", 1, 1, 0),
-            (str(uuid.uuid4())[:8], "gemini", "Gemini 1.5 Flash - Slot 1", "AIzaSy_DEMO_KEY_SLOT_1", "gemini-1.5-flash", "", 1, 2, 0),
-            (str(uuid.uuid4())[:8], "gemini", "Gemini 1.5 Flash - Slot 2", "AIzaSy_DEMO_KEY_SLOT_2", "gemini-1.5-flash", "", 1, 3, 0),
-            (str(uuid.uuid4())[:8], "groq", "Groq LLaMA Vision Backup", "gsk_DEMO_KEY_GROQ_1", "llama-3.2-11b-vision", "https://api.groq.com/openai/v1", 1, 4, 0)
+            (str(uuid.uuid4())[:8], "gemini", "Gemini 1.5 Flash - Slot 1", "AIzaSy_DEMO_KEY_SLOT_1", "gemini-flash-lite-latest", "", 0, 2, 0),
+            (str(uuid.uuid4())[:8], "gemini", "Gemini 1.5 Flash - Slot 2", "AIzaSy_DEMO_KEY_SLOT_2", "gemini-flash-lite-latest", "", 0, 3, 0),
+            (str(uuid.uuid4())[:8], "groq", "Groq LLaMA Vision Backup", "gsk_DEMO_KEY_GROQ_1", "llama-3.2-11b-vision", "https://api.groq.com/openai/v1", 0, 4, 0)
         ]
         cursor.executemany(
             """INSERT INTO api_keys 
@@ -308,7 +308,12 @@ def get_all_api_keys() -> List[dict]:
 def get_active_keys_by_provider(provider: str) -> List[dict]:
     conn = get_db_connection()
     rows = conn.execute(
-        "SELECT * FROM api_keys WHERE provider = ? AND is_active = 1 ORDER BY usage_count ASC, priority ASC",
+        """SELECT * FROM api_keys 
+           WHERE provider = ? AND is_active = 1 
+             AND key_value NOT LIKE 'AIzaSy_DEMO%' 
+             AND key_value NOT LIKE 'AIzaSy_TEST%' 
+             AND key_value NOT LIKE 'gsk_DEMO%'
+           ORDER BY usage_count ASC, priority ASC""",
         (provider,)
     ).fetchall()
     conn.close()

@@ -581,12 +581,16 @@ window.initStudioPage = () => {
     showToast("Hệ thống đang tiến hành dịch thuật tài liệu...", "info");
 
     try {
+      const modelSelect = document.getElementById("selectModel");
+      const currentModel = modelSelect ? modelSelect.value : "";
+
       const resp = await fetch("/api/translate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           markdown: currentProcessedResult.full_markdown,
-          target_lang: targetLang
+          target_lang: targetLang,
+          model: currentModel
         })
       });
 
