@@ -26,23 +26,6 @@ app = Flask(
 )
 app.secret_key = os.getenv("SECRET_KEY", "hybrid-ocr-enterprise-secret-key-2026")
 
-@app.before_request
-def redirect_alb_to_https():
-    """Tự động chuyển tiếp người dùng từ ALB HTTP sang API Gateway HTTPS để bảo mật OAuth."""
-    user_agent = request.headers.get("User-Agent", "")
-    if "ELB-HealthChecker" in user_agent:
-        return None
-
-    if request.headers.get("apigw-requestid") or request.headers.get("x-amzn-apigateway-api-id"):
-        return None
-
-    host = request.headers.get("X-Forwarded-Host") or request.host or ""
-    if "elb.amazonaws.com" in host:
-        api_gw_host = "hpyewvtaya.execute-api.ap-southeast-1.amazonaws.com"
-        query_part = f"?{request.query_string.decode('utf-8')}" if request.query_string else ""
-        target_url = f"https://{api_gw_host}{request.path}{query_part}"
-        return redirect(target_url, code=302)
-
 SAMPLE_DIR = os.path.join(PROJECT_ROOT, "data", "sample_documents")
 os.makedirs(SAMPLE_DIR, exist_ok=True)
 
