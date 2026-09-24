@@ -119,13 +119,25 @@ def api_me():
         }
     })
 
+def _get_cognito_redirect_uri() -> str:
+    """Xác định Callback URL phù hợp theo môi trường truy cập (Localhost vs AWS Production HTTPS)."""
+    settings = get_settings()
+    host = (request.headers.get("X-Forwarded-Host") or request.host or "").lower()
+
+    if "localhost" in host:
+        return "http://localhost:5000/api/auth/cognito/callback"
+    if "127.0.0.1" in host:
+        return "http://127.0.0.1:5000/api/auth/cognito/callback"
+
+    return settings.cognito_redirect_uri or "https://hpyewvtaya.execute-api.ap-southeast-1.amazonaws.com/api/auth/cognito/callback"
+
 @auth_bp.route("/api/auth/cognito/login", methods=["GET"])
 def cognito_login():
     """Chuyển hướng người dùng tới Cognito Hosted UI để đăng nhập qua Google IdP."""
     settings = get_settings()
     domain = (settings.cognito_domain or "").rstrip("/")
     client_id = settings.cognito_app_client_id or ""
-    redirect_uri = settings.cognito_redirect_uri or ""
+    redirect_uri = _get_cognito_redirect_uri()
     
     if not domain or not client_id:
         logger.error("Chưa cấu hình COGNITO_DOMAIN hoặc COGNITO_APP_CLIENT_ID")
@@ -160,7 +172,7 @@ def cognito_callback():
     domain = (settings.cognito_domain or "").rstrip("/")
     client_id = settings.cognito_app_client_id or ""
     client_secret = settings.cognito_app_client_secret or ""
-    redirect_uri = settings.cognito_redirect_uri or ""
+    redirect_uri = _get_cognito_redirect_uri()
 
     token_url = f"{domain}/oauth2/token"
     headers = {

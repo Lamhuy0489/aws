@@ -81,7 +81,7 @@ class AppSettings(BaseModel):
         description="Cognito Hosted UI Domain"
     )
     cognito_redirect_uri: str = Field(
-        default="http://localhost:5000/api/auth/cognito/callback",
+        default="https://hpyewvtaya.execute-api.ap-southeast-1.amazonaws.com/api/auth/cognito/callback",
         description="Cognito OAuth Redirect Callback URI"
     )
 

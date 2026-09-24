@@ -32,12 +32,16 @@ aws ssm get-command-invocation \
   --query "StandardOutputContent" \
   --output text
 
-echo "[3/3] Kiem tra phan hoi thuc te tu Application Load Balancer..."
-HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$ALB_URL")
+HTTPS_URL="https://hpyewvtaya.execute-api.ap-southeast-1.amazonaws.com/login"
+ALB_URL="http://huylam-ocr-alb-1284818160.ap-southeast-1.elb.amazonaws.com/login"
+
+echo "[3/3] Kiem tra phan hoi thuc te tu HTTPS API Gateway & ALB..."
+HTTP_STATUS=$(curl -s -L -o /dev/null -w "%{http_code}" "$HTTPS_URL")
 
 if [ "$HTTP_STATUS" = "200" ]; then
-  echo "CAP NHAT THANH CONG! May chu phan hoi HTTP $HTTP_STATUS OK."
-  echo "URL Live: $ALB_URL"
+  echo "CAP NHAT THANH CONG! May chu phan hoi HTTP $HTTP_STATUS OK qua HTTPS."
+  echo "URL Live HTTPS (Khuyen nghi): $HTTPS_URL"
+  echo "URL ALB: $ALB_URL"
 else
   echo "Canh bao: May chu tra ve ma HTTP $HTTP_STATUS. Vui long kiem tra log."
 fi
