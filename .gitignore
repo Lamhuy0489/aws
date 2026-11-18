@@ -82,3 +82,7 @@ yarn-error.log*
 # Nested Workshop Hugo Website
 workshop/
 
+# Data and backups
+data/
+~$*
+

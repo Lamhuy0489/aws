@@ -29,7 +29,8 @@ He thong tri thuc du an AWS va Agentic RAG duoc duy tri theo mo hinh Bo nao ngoa
 ## 5. Bai tong hop chuyen sau (Syntheses)
 - [[project-status-and-roadmap]]: Tong hop trang thai du an Serverless Hybrid OCR & Translation, kien truc mo rong AWS Native va checklist 12 tuan.
 - [[fcaj-internship-submission-guide]]: Huong dan xay dung va nop bao cao thuc tap FCAJ bang website Hugo tren GitHub Pages.
+- [[internship-completion-and-resource-teardown]]: Tong ket hoan tat 12 tuan thuc tap tot nghiep va giai phong ha tang dam may AWS.
 
 ## 6. Luan chuyen cau tra loi (Outputs)
-- (Chua co truy van moi - se duoc cap nhat qua chu ky Query)
+- [[2026-11-18-aws-resource-teardown-and-finops-audit]]: Nhat ky kiem toan chi phi FinOps va bien ban nghiem thu teardown tai nguyen AWS.
 

@@ -1,0 +1,345 @@
+[000][Normal] TRƯỜNG ĐẠI HỌC XÂY DỰNG HÀ NỘI
+KHOA CÔNG NGHỆ THÔNG TIN
+[001][Normal] --------------------***--------------------
+[002][Normal] 
+[003][Normal] BÁO CÁO THỰC TẬP TỐT NGHIỆP
+
+[004][Normal] ĐỀ TÀI: NGHIÊN CỨU TRIỂN KHAI HẠ TẦNG ĐÁM MÂY AWS VÀ XÂY DỰNG HỆ THỐNG TRỢ LÝ TRI THỨC DOANH NGHIỆP NEXUSDOC AI (AGENTIC RAG)
+(CHƯƠNG TRÌNH FIRST CLOUD AI JOURNEY)
+[005][Normal] Sinh viên thực hiện: Trần Nhật Minh
+Mã số sinh viên: 0117967
+Lớp / Khóa: 67CS - Khóa 67
+Ngành đào tạo: Khoa học Máy tính
+Giảng viên hướng dẫn: ThS. Lê Văn Minh
+Đơn vị thực tập (ĐVHD): CÔNG TY TNHH AMAZON WEB SERVICES VIỆT NAM 
+Người phụ trách (ĐVHD): Nguyễn Gia Hưng (hunggia@amazon.com.vn - +841277870645)
+Cán bộ hướng dẫn (CBHD): Phạm Văn Phóng (Technical Mentor, AWS Vietnam)
+Thời gian thực tập: 03/08/2026 – 27/09/2026 (08 tuần)
+[006][Normal] HÀ NỘI – NĂM 2026
+[007][Normal] THÔNG TIN SINH VIÊN VÀ ĐƠN VỊ THỰC TẬP
+(Theo biểu mẫu quy chuẩn TTTN-06)
+[008][Normal] 
+[009][Normal] LỜI CẢM ƠN
+[010][Normal] Lời đầu tiên, em xin bày tỏ lòng biết ơn sâu sắc nhất tới Ban Giám hiệu Trường Đại học Xây dựng Hà Nội (HUCE), Ban Chủ nhiệm Khoa Công nghệ Thông tin cùng toàn thể quý thầy cô giáo đã tận tình giảng dạy, trang bị cho em nền tảng kiến thức khoa học máy tính vững vàng trong suốt quá trình học tập tại giảng đường đại học.
+[011][Normal] Đặc biệt, em xin gửi lời cảm ơn chân thành nhất tới ThS. Lê Văn Minh – Giảng viên hướng dẫn trực tiếp. Thầy đã luôn theo sát, định hướng chuyên môn, đóng góp những ý kiến quý báu và tạo mọi điều kiện thuận lợi nhất để em hoàn thành xuất sắc học phần Thực tập tốt nghiệp này.
+[012][Normal] Em xin trân trọng gửi lời cảm ơn sâu sắc tới Ban Lãnh đạo CÔNG TY TNHH AMAZON WEB SERVICES VIỆT NAM (AWS Việt Nam) cùng toàn thể các anh chị trong Ban Điều phối chương trình First Cloud AI Journey (FCAJ). Cảm ơn công ty đã tiếp nhận, tài trợ hạ tầng điện toán đám mây thực hành chuyên nghiệp và mang lại một môi trường rèn luyện thực tế đẳng cấp quốc tế.
+[013][Normal] Em xin gửi lời cảm ơn đặc biệt tới anh Nguyễn Gia Hưng – Người phụ trách tại ĐVHD, cùng anh Phạm Văn Phóng – Cán bộ hướng dẫn trực tiếp tại AWS Việt Nam, và đội ngũ Mentors giàu kinh nghiệm của AWS Study Group. Các anh chị đã không quản ngại thời gian hướng dẫn em phương pháp tư duy phân tích log hệ thống từ gốc rễ, chia sẻ những kinh nghiệm vận hành thực chiến và hỗ trợ em vượt qua những bài toán kỹ thuật phức tạp trong quá trình triển khai hệ thống NexusDoc AI.
+[014][Normal] Mặc dù đã có nhiều cố gắng trong việc nghiên cứu và áp dụng các công nghệ tiên tiến nhất vào báo cáo, song do kiến thức và kinh nghiệm thực tế còn trong giai đoạn tích lũy, bài viết khó tránh khỏi những thiếu sót nhất định. Em rất mong nhận được những ý kiến đóng góp, chỉ dẫn quý báu từ quý thầy cô giáo và các chuyên gia để cuốn báo cáo cũng như các sản phẩm nghiên cứu tiếp theo của em được hoàn thiện hơn nữa.
+[015][Normal] Em xin kính chúc quý thầy cô giáo cùng toàn thể các anh chị cán bộ tại AWS Việt Nam luôn dồi dào sức khỏe, hạnh phúc và gặt hái được nhiều thành công rực rỡ trong sự nghiệp trồng người cũng như phát triển công nghệ!
+[016][Normal] Hà Nội, ngày 27 tháng 09 năm 2026
+Sinh viên thực hiện
+
+
+
+Trần Nhật Minh
+[017][Normal] 
+[018][Normal] MỤC LỤC
+[019][Normal] THÔNG TIN SINH VIÊN VÀ ĐƠN VỊ THỰC TẬP (MẪU TTTN-06)	2
+[020][Normal] LỜI CẢM ƠN	3
+[021][Normal] MỤC LỤC	4
+[022][Normal] DANH MỤC CÁC TỪ VIẾT TẮT	5
+[023][Normal] DANH MỤC HÌNH VẼ VÀ BẢNG BIỂU	6
+[024][Normal] PHẦN 1: GIỚI THIỆU CHUNG VỀ ĐƠN VỊ THỰC TẬP	7
+[025][Normal] 1.1. Lịch sử hình thành và phát triển của Amazon Web Services (AWS)	7
+[026][Normal] 1.2. Pháp nhân và cơ cấu tổ chức của AWS tại Việt Nam	8
+[027][Normal] 1.3. Lĩnh vực hoạt động và vai trò trong Chuyển đổi số Quốc gia	9
+[028][Normal] 1.4. Chương trình Đào tạo & Ươm mầm First Cloud AI Journey (FCAJ)	10
+[029][Normal] 1.5. Văn hóa doanh nghiệp và Các nguyên tắc Lãnh đạo (Amazon Leadership Principles)	11
+[030][Normal] PHẦN 2: MỤC TIÊU VÀ KẾ HOẠCH THỰC TẬP	12
+[031][Normal] 2.1. Mục tiêu học tập cá nhân gắn liền với Chuẩn đầu ra (CLOs)	12
+[032][Normal] 2.2. Kế hoạch công việc chi tiết qua 8 tuần thực tập	13
+[033][Normal] 2.3. Bảng phân công nhiệm vụ và chỉ số đo lường hiệu quả (KPIs)	15
+[034][Normal] PHẦN 3: NỘI DUNG VÀ KẾT QUẢ THỰC TẬP (TRỌNG TÂM KỸ THUẬT)	16
+[035][Normal] 3.1. Tổng quan Nhiệm vụ Kỹ thuật và Dự án Capstone Enterprise RAG	16
+[036][Normal] 3.2. Thiết kế và Triển khai Hạ tầng Đám mây AWS Zero-Trust	18
+[037][Normal] 3.2.1. Mạng ảo VPC Đa tầng (Multi-AZ Zero-Trust Network)	18
+[038][Normal] 3.2.2. Ma trận Tường lửa Trạng thái Chaining (Defense-in-Depth)	19
+[039][Normal] 3.2.3. CSDL Quan hệ Amazon RDS PostgreSQL & Quản lý Bí mật	20
+[040][Normal] 3.2.4. Đóng gói Container & Kho lưu trữ Amazon ECR	21
+[041][Normal] 3.2.5. Cân bằng tải và Định tuyến Tầng 7 với Application Load Balancer	22
+[042][Normal] 3.3. Xây dựng Hệ thống Trợ lý Tri thức NexusDoc AI (Agentic RAG Engine)	24
+[043][Normal] 3.3.1. Ngăn xếp Công nghệ Thực tế (Tech Stack) & Clean Architecture	24
+[044][Normal] 3.3.2. Quản trị Định danh & Cô lập Dữ liệu Tuyệt đối (Multi-Tenancy)	25
+[045][Normal] 3.3.3. Bóc tách Văn bản Phân cấp (Hierarchical Legal & Regulation Parsing)	26
+[046][Normal] 3.3.4. Vùng Tri Thức Giới Hạn (NotebookLM-Style Knowledge Scope)	27
+[047][Normal] 3.3.5. Pipeline AI RAG Chuyên sâu 3 Giai đoạn & Cross-Reference Agent	28
+[048][Normal] 3.3.6. Bảng Ánh xạ Module Hệ thống RAG sang Dịch vụ Đám mây AWS	29
+[049][Normal] 3.4. Kiểm thử Toàn trình, Đánh giá Hiệu năng & Rào chắn Bảo mật	31
+[050][Normal] 3.4.1. Kiểm thử Toàn trình End-to-End Pipeline RAG trên Web UI qua ALB	31
+[051][Normal] 3.4.2. Kiểm thử Kiến trúc Bảo mật 2 Tầng (2-Tier Security Guardrails)	33
+[052][Normal] 3.4.3. Kết quả Đo lường Đánh giá Tự động (Benchmark Results)	35
+[053][Normal] 3.5. Giám sát Vận hành & Cảnh báo Sự cố với Amazon CloudWatch	36
+[054][Normal] 3.6. Hoạt động Mở rộng: Chuỗi Cuộc thi Đấu trường Điều tra Sự cố Cloud (Prove It)	38
+[055][Normal] PHẦN 4: PHÂN TÍCH, ĐÁNH GIÁ VÀ ĐỀ XUẤT	40
+[056][Normal] 4.1. Nhận xét về Quy trình Công việc và Giải pháp Kỹ thuật	40
+[057][Normal] 4.2. Các Khó khăn Thách thức Thực tế và Giải pháp Khắc phục	41
+[058][Normal] 4.3. Phân tích Mối liên hệ Giữa Lý thuyết Giảng đường và Thực tế Doanh nghiệp	42
+[059][Normal] 4.4. Đề xuất Cải tiến Quy trình và Giải pháp Kỹ thuật Mở rộng	44
+[060][Normal] PHẦN 5: TỰ NHẬN XÉT VÀ ĐỊNH HƯỚNG NGHỀ NGHIỆP CÁ NHÂN	45
+[061][Normal] 5.1. Tự đánh giá Năng lực Cá nhân theo Chuẩn Đào tạo	45
+[062][Normal] 5.2. Điểm mạnh và Điểm còn Hạn chế Cần Hoàn thiện	47
+[063][Normal] 5.3. Bài học Kinh nghiệm Thực tiễn Rút ra từ Môi trường AWS	48
+[064][Normal] 5.4. Lộ trình Phát triển Nghề nghiệp trong Lĩnh vực Cloud / DevOps / AI	49
+[065][Normal] PHẦN 6: KẾT LUẬN VÀ KIẾN NGHỊ	51
+[066][Normal] 6.1. Kết luận và Tổng kết Các Bài học Kinh nghiệm Quý báu	51
+[067][Normal] 6.2. Kiến nghị Đối với Nhà trường (Trường ĐH Xây dựng Hà Nội - HUCE)	52
+[068][Normal] 6.3. Kiến nghị Đối với Đơn vị Hướng dẫn (AWS Việt Nam)	53
+[069][Normal] TÀI LIỆU THAM KHẢO	54
+[070][Normal] XÁC NHẬN HOÀN THÀNH THỰC TẬP TỐT NGHIỆP	55
+[071][Normal] 
+[072][Normal] DANH MỤC CÁC TỪ VIẾT TẮT
+[073][Normal] 
+[074][Normal] DANH MỤC HÌNH VẼ VÀ BẢNG BIỂU
+[075][Normal] 1. Danh mục Hình vẽ:
+[076][Normal] Hình 3.1: Sơ đồ luồng xử lý toàn trình Pipeline RAG từ Ingestion, Retrieval đến Generation có Guardrails
+[077][Normal] Hình 3.2: Sơ đồ kiến trúc tổng thể của hệ thống NexusDoc AI triển khai trên AWS Cloud (Multi-AZ Zero-Trust)
+[078][Normal] Hình 3.3: Sơ đồ phân bổ tài nguyên VPC Resource Map trên AWS Management Console
+[079][Normal] Hình 3.4: Thông số cấu hình cụm cơ sở dữ liệu quan hệ Amazon RDS PostgreSQL (db.t4g.micro)
+[080][Normal] Hình 3.5: Danh sách các Private Container Repositories trên Amazon Elastic Container Registry (ECR)
+[081][Normal] Hình 3.6: Trạng thái hoạt động Active của Application Load Balancer (rag-lb) trên AWS
+[082][Normal] Hình 3.7: Kết quả Health Check tự động xác nhận toàn bộ Targets trong Target Group đều ở trạng thái Healthy
+[083][Normal] Hình 3.8: Giao diện NexusDoc AI Assistant trích xuất địa chỉ thực tập kèm nguồn TTTN-01.docx - Trang 1
+[084][Normal] Hình 3.9: Giao diện AI trích xuất sản phẩm dự kiến của đề tài từ tài liệu thực tế
+[085][Normal] Hình 3.10: Kiểm thử Enterprise Security Guardrails kích hoạt từ chối câu hỏi ngoài phạm vi tài liệu
+[086][Normal] Hình 3.11: Bảng điều khiển giám sát Dashboard-RAG thời gian thực trên Amazon CloudWatch
+[087][Normal] Hình 3.12: Cấu hình CloudWatch Alarm kích hoạt cảnh báo qua SNS Topic khi tải CPU vượt ngưỡng
+[088][Normal] Hình 3.13: Bảng kết quả chấm điểm Day 1 cuộc thi Prove It của Team 06 WAR đạt 70.8 điểm
+[089][Normal] Hình 3.14: Hình ảnh sinh hoạt và làm việc thực tế của nhóm tại Văn phòng AWS Việt Nam (Grand Terra)
+[090][Normal] 
+[091][Normal] 2. Danh mục Bảng biểu:
+[092][Normal] Bảng 2.1: Mục tiêu học tập cá nhân đối chiếu với Chuẩn đầu ra (CLOs) của học phần
+[093][Normal] Bảng 2.2: Kế hoạch làm việc và kết quả mong đợi chi tiết qua 8 tuần thực tập (chuẩn TTTN-02)
+[094][Normal] Bảng 3.1: Bảng ma trận cấu hình Security Groups (Zero-Trust Firewall Matrix)
+[095][Normal] Bảng 3.2: Bảng quy tắc định tuyến Path-based Routing trên Application Load Balancer
+[096][Normal] Bảng 3.3: Bảng ánh xạ toàn diện module mã nguồn RAG sang dịch vụ đám mây AWS
+[097][Normal] Bảng 3.4: Kết quả kiểm thử tự động toàn trình (Benchmark Results) của NexusDoc AI
+[098][Normal] Bảng 3.5: Tiến trình điều tra sự cố Kubernetes 30 phút trong khối Practice Day 2
+[099][Normal] Bảng 3.6: Khung cấu trúc 7 Blocks và Tiến trình Đấu trường Chung kết Day 3 Prove It Arena
+[100][Normal] Bảng 5.1: Bảng tự đánh giá năng lực cá nhân theo 12 tiêu chí chuẩn của Khoa CNTT - HUCE
+[101][Normal] 
+[102][Normal] PHẦN 1: GIỚI THIỆU CHUNG VỀ ĐƠN VỊ THỰC TẬP
+[103][Normal] 1.1. Lịch sử hình thành và phát triển của Amazon Web Services (AWS)
+[104][Normal] Amazon Web Services (AWS) là công ty con của tập đoàn công nghệ đa quốc gia Amazon.com, Inc., chuyên cung cấp các nền tảng điện toán đám mây theo yêu cầu cho cá nhân, doanh nghiệp và các tổ chức chính phủ trên toàn cầu. Khởi đầu từ năm 2006 với việc ra mắt các dịch vụ hạ tầng cốt lõi như Simple Storage Service (Amazon S3) và Elastic Compute Cloud (Amazon EC2), AWS đã mở ra một kỷ nguyên mới cho ngành công nghệ thông tin toàn cầu, tiên phong biến năng lực tính toán và lưu trữ trở thành một loại dịch vụ tiện ích (utility computing) có thể co giãn linh hoạt và thanh toán theo mức độ sử dụng thực tế (pay-as-you-go).
+[105][Normal] Trải qua gần hai thập kỷ đổi mới sáng tạo không ngừng, AWS liên tục khẳng định vị thế dẫn đầu tuyệt đối trên thị trường hạ tầng đám mây toàn cầu (Cloud Infrastructure and Platform Services - CIPS). Theo các báo cáo đánh giá định kỳ của Gartner Magic Quadrant, AWS đã liên tiếp hơn 13 năm giữ vững vị trí trong nhóm dẫn đầu (Leaders Quadrant) về cả tầm nhìn chiến lược lẫn năng lực thực thi. Tính đến năm 2026, hệ sinh thái AWS cung cấp hơn 240 dịch vụ toàn diện, bao gồm tính toán, lưu trữ, cơ sở dữ liệu, mạng viễn thông, phân tích dữ liệu lớn, trí tuệ nhân tạo tạo sinh (Generative AI), Internet vạn vật (IoT), bảo mật và quản trị doanh nghiệp.
+[106][Normal] Hạ tầng đám mây toàn cầu của AWS được xây dựng trên mô hình phân tán có độ sẵn sàng cực cao, trải dài trên 34 Vùng địa lý (Geographic Regions) với hơn 108 Vùng sẵn sàng (Availability Zones - AZs) và hàng trăm điểm hiện diện biên (Edge Locations / CloudFront Points of Presence) phục vụ hàng triệu khách hàng tích cực trên 190 quốc gia.
+[107][Normal] 1.2. Pháp nhân và cơ cấu tổ chức của AWS tại Việt Nam
+[108][Normal] Tại thị trường Việt Nam, đơn vị tiếp nhận và hướng dẫn thực tập có tư cách pháp nhân chính thức là CÔNG TY TNHH AMAZON WEB SERVICES VIỆT NAM (Tên giao dịch quốc tế: AMAZON WEB SERVICES VIETNAM COMPANY LIMITED), được thành lập và hoạt động hợp pháp theo Luật Doanh nghiệp của nước Cộng hòa Xã hội Chủ nghĩa Việt Nam.
+[109][Normal] Trụ sở và Văn phòng đại diện: Cơ cấu hiện diện và mạng lưới văn phòng của AWS Việt Nam bao gồm:
+[110][List Bullet] Trụ sở chính: Tầng 36, Tòa nhà Bitexco Financial Tower, Số 2 đường Hải Triều, Phường Bến Nghé (nay là Phường Sài Gòn), Quận 1, Thành phố Hồ Chí Minh, Việt Nam. Đây là trung tâm đầu não điều hành các hoạt động hợp tác chiến lược, tư vấn thương mại và quan hệ đối tác cấp cao.
+[111][List Bullet] Văn phòng Hà Nội: Tầng 7, Tòa nhà Grand Terra, Số 36 phố Cát Linh, Phường Ô Chợ Dừa, Quận Đống Đa, Thành phố Hà Nội. Đây là văn phòng phụ trách khối cơ quan ban ngành chính phủ, các tổ chức giáo dục đại học, doanh nghiệp chuyển đổi số và là nơi diễn ra các hoạt động sinh hoạt chuyên môn, workshop thực tế của chương trình thực tập.
+[112][Normal] Về cơ cấu tổ chức, AWS Việt Nam vận hành theo mô hình chuyên môn hóa cao bao gồm các bộ phận nòng cốt: Khối Kiến trúc giải pháp (Solutions Architecture) chịu trách nhiệm tư vấn kiến trúc kỹ thuật tối ưu; Khối Chuyên gia Đào tạo & Kỹ thuật (Technical Trainers & Advocates); Khối Phát triển Đối tác (Partner Ecosystem); và Khối Hỗ trợ Kỹ thuật chuyên sâu (Enterprise Support).
+[113][Normal] 1.3. Lĩnh vực hoạt động và vai trò trong Chuyển đổi số Quốc gia
+[114][Normal] AWS Việt Nam đóng vai trò là động lực công nghệ quan trọng thúc đẩy công cuộc Chuyển đổi số Quốc gia theo định hướng của Chính phủ. Lĩnh vực hoạt động chính bao gồm: tư vấn và cung cấp hạ tầng đám mây cho các ngân hàng, tập đoàn tài chính, viễn thông, thương mại điện tử hàng đầu tại Việt Nam; hỗ trợ hiện đại hóa ứng dụng và di chuyển dữ liệu lên đám mây; đồng thời tích cực chuyển giao tri thức công nghệ mới nhất về Trí tuệ nhân tạo (AI/ML) và Phân tích dữ liệu lớn.
+[115][Normal] Bên cạnh các hoạt động kinh doanh, AWS đặc biệt chú trọng đầu tư vào phát triển nguồn nhân lực số tại Việt Nam. Thông qua các sáng kiến giáo dục như AWS Academy, AWS Educate và chuỗi hội thảo kỹ thuật AWS Study Group, công ty đã hỗ trợ đào tạo kỹ năng đám mây cho hàng chục ngàn giảng viên và sinh viên các trường đại học kỹ thuật trên cả nước.
+[116][Normal] 1.4. Chương trình Đào tạo & Ươm mầm First Cloud AI Journey (FCAJ)
+[117][Normal] First Cloud AI Journey (FCAJ) là chương trình thực tập và ươm mầm tài năng chuyên sâu (Workforce Bootcamp) được thiết kế đặc quyền bởi AWS Việt Nam phối hợp cùng cộng đồng AWS Study Group. Chương trình hướng tới việc thu hẹp khoảng cách giữa lý thuyết học thuật tại trường đại học và yêu cầu khắt khe của ngành công nghiệp điện toán đám mây hiện đại.
+[118][Normal] Mục tiêu chương trình: Mục tiêu trọng tâm của FCAJ bao gồm:
+[119][List Bullet] Trang bị tư duy thiết kế hệ thống chuẩn Enterprise theo khung AWS Well-Architected Framework (Bảo mật, Hiệu năng, Độ tin cậy, Tối ưu chi phí).
+[120][List Bullet] Thực hành trực tiếp (Hands-on) 100% trên môi trường AWS Sandbox thực tế, giúp sinh viên làm chủ các dịch vụ cốt lõi từ hạ tầng IaaS đến PaaS và AI Serverless.
+[121][List Bullet] Thúc đẩy năng lực nghiên cứu độc lập và giải quyết các bài toán công nghệ tiên phong: RAG Đa tầng (Agentic RAG), Kiểm soát rào chắn AI (Security Guardrails) và Điều tra sự cố tự động (Agentic Incident Investigation).
+[122][Normal] 1.5. Văn hóa doanh nghiệp và Các nguyên tắc Lãnh đạo (Amazon Leadership Principles)
+[123][Normal] Tác phong văn hóa chuyên nghiệp: Văn hóa làm việc tại AWS được định hình bởi Bộ 16 Nguyên tắc Lãnh đạo (Amazon Leadership Principles - LPs). Trong suốt 8 tuần thực tập, sinh viên đã được hòa mình và rèn luyện theo các giá trị cốt lõi này:
+[124][List Bullet] Customer Obsession (Ám ảnh vì khách hàng): Luôn xuất phát từ nhu cầu và trải nghiệm của người dùng để thiết kế giải pháp kỹ thuật, không làm tính năng chỉ vì công nghệ mà phải vì giá trị thực tế.
+[125][List Bullet] Ownership (Tinh thần làm chủ): Hành động vì lợi ích dài hạn của toàn hệ thống, chịu trách nhiệm tuyệt đối về mã nguồn, cấu hình hạ tầng và tính an toàn của dự án.
+[126][List Bullet] Bias for Action (Ưu tiên hành động): Trong môi trường công nghệ số, tốc độ triển khai và kiểm thử là yếu tố sống còn. Sinh viên được khuyến khích nhanh chóng tạo ra các bản mẫu (PoC) chạy được thực tế.
+[127][List Bullet] Dive Deep (Đào sâu bản chất): Không dừng lại ở bề mặt triệu chứng lỗi; kiên trì phân tích log hệ thống, truy vết mã lỗi để tìm ra nguyên nhân gốc rễ (Root Cause Analysis).
+[128][Normal] 
+[129][Normal] PHẦN 2: MỤC TIÊU VÀ KẾ HOẠCH THỰC TẬP
+[130][Normal] 2.1. Mục tiêu học tập cá nhân gắn liền với Chuẩn đầu ra (CLOs)
+[131][Normal] Căn cứ theo đề cương chi tiết học phần Thực tập Tốt nghiệp của Khoa Công nghệ Thông tin – Trường Đại học Xây dựng Hà Nội (HUCE), sinh viên đã xây dựng bộ mục tiêu học tập cá nhân gắn kết chặt chẽ với ba nhóm Chuẩn đầu ra (Course Learning Outcomes - CLOs) như sau:
+[132][Normal] Bảng 2.1: Mục tiêu học tập cá nhân đối chiếu với Chuẩn đầu ra (CLOs) của học phần
+[133][Normal] 2.2. Kế hoạch công việc chi tiết qua 8 tuần thực tập
+[134][Normal] Căn cứ theo Bản Kế hoạch học tập thực tập tốt nghiệp (mẫu TTTN-02) đã được Khoa Công nghệ Thông tin – Trường ĐH Xây dựng Hà Nội phê duyệt và nhật ký công việc thực tế (Worklog), lộ trình thực tập 8 tuần của sinh viên tại AWS Việt Nam được phân bổ khoa học và thực hiện nghiêm túc như sau:
+[135][Normal] Bảng 2.2: Kế hoạch làm việc và kết quả mong đợi chi tiết qua 8 tuần thực tập (chuẩn TTTN-02)
+[136][Normal] 2.3. Bảng phân công nhiệm vụ và chỉ số đo lường hiệu quả (KPIs)
+[137][Normal] Để đảm bảo tiến độ và chất lượng thực tập, sinh viên làm việc dưới sự giám sát trực tiếp của Mentor AWS và Giảng viên hướng dẫn với các chỉ số hiệu quả (KPIs) rõ ràng: 100% các bài lab phải được kiểm chứng bằng hình ảnh chụp màn hình console thực tế; mã nguồn được quản lý phiên bản qua Git; báo cáo nhật ký công việc (worklog) được cập nhật định kỳ vào cuối mỗi tuần.
+[138][Normal] 
+[139][Normal] PHẦN 3: NỘI DUNG VÀ KẾT QUẢ THỰC TẬP
+[140][Normal] 3.1. Tổng quan Nhiệm vụ Kỹ thuật và Dự án Capstone Enterprise RAG
+[141][Normal] Trong bối cảnh bùng nổ của Trí tuệ nhân tạo tạo sinh (Generative AI), các doanh nghiệp đang đối mặt với bài toán lớn: Làm thế nào để khai thác sức mạnh của Mô hình Ngôn ngữ Lớn (LLM) để tra cứu, phân tích kho tài liệu nội bộ khổng lồ (văn bản pháp quy, hồ sơ dự án, tài liệu kỹ thuật) mà vẫn đảm bảo tính chính xác tuyệt đối, loại bỏ hiện tượng bịa đặt thông tin (Hallucination) và bảo mật dữ liệu bí mật?
+[142][Normal] Nhiệm vụ trọng tâm của đợt thực tập là thiết kế, xây dựng và triển khai hoàn chỉnh một giải pháp phần mềm cấp doanh nghiệp mang tên NexusDoc AI (Enterprise AI Legal & Knowledge RAG) trên nền tảng đám mây AWS. Hệ thống kết hợp kiến trúc Retrieval-Augmented Generation (RAG) đa tầng, mô hình phân vùng tri thức linh hoạt lấy cảm hứng từ Google NotebookLM, cơ chế bảo vệ rào chắn an toàn 2 tầng (Enterprise Security Guardrails) và hạ tầng mạng Zero-Trust.
+[143][Normal] 
+[144][Normal] Hình 3.1: Sơ đồ luồng xử lý toàn trình Pipeline RAG từ Ingestion, Retrieval đến Generation có Guardrails
+[145][Normal] 
+[146][Normal] Hình 3.2: Sơ đồ kiến trúc tổng thể của hệ thống NexusDoc AI triển khai trên AWS Cloud (Multi-AZ Zero-Trust)
+[147][Normal] 3.2. Thiết kế và Triển khai Hạ tầng Đám mây AWS Zero-Trust (Workshop)
+[148][Normal] Hạ tầng đám mây phục vụ hệ thống được triển khai tuân thủ nghiêm ngặt khung kiến trúc AWS Well-Architected Framework, bao gồm các thành phần cốt lõi sau:
+[149][Normal] 3.2.1. Mạng ảo VPC Đa tầng (Multi-AZ Zero-Trust Network)
+[150][Normal] Khởi tạo một VPC chuyên dụng (VPC ID: vpc-03228d0b15b9ea7be) với dải địa chỉ CIDR 10.0.0.0/16 tại Region Singapore (ap-southeast-1). Mạng được phân chia thành 6 Subnets độc lập trải dài trên 2 Availability Zones (ap-southeast-1a và ap-southeast-1b):
+[151][List Bullet] 2 Public Subnets: rag-public-1-sn (10.0.1.0/24) và rag-public-2-sn (10.0.2.0/24): Chứa Internet Gateway, NAT Gateway và Application Load Balancer.
+[152][List Bullet] 2 Private Subnets: rag-private-app-1-sn (10.0.3.0/24) và rag-private-app-2-sn (10.0.4.0/24): Chứa các máy chủ ứng dụng EC2/ECS chạy FastAPI Backend và Qdrant Vector Engine. Điểm kết nối ra ngoài Internet được định tuyến qua NAT Gateway, hoàn toàn không tiếp nhận kết nối trực tiếp từ ngoài vào.
+[153][List Bullet] 2 Isolated DB Subnets: rag-isolated-db-1-sn (10.0.5.0/24) và rag-isolated-db-2-sn (10.0.6.0/24): Chứa cụm cơ sở dữ liệu quan hệ Amazon RDS PostgreSQL, hoàn toàn không có định tuyến ra Internet Gateway lẫn NAT Gateway (Air-gapped database isolation).
+[154][Normal] 
+[155][Normal] Hình 3.3: Sơ đồ phân bổ tài nguyên VPC Resource Map trên AWS Management Console
+[156][Normal] 3.2.2. Ma trận Tường lửa Trạng thái Chaining (Defense-in-Depth)
+[157][Normal] Thay vì mở dải IP rộng, hệ thống thiết lập cơ chế liên kết chuỗi (Security Group Chaining) trực tiếp theo định danh Resource ID, đảm bảo phân tách trách nhiệm và cô lập rủi ro tuyệt đối:
+[158][Normal] Bảng 3.1: Bảng ma trận cấu hình Security Groups (Zero-Trust Firewall Matrix)
+[159][Normal] 3.2.3. CSDL Quan hệ Amazon RDS PostgreSQL & Quản lý Bí mật
+[160][Normal] Hệ thống sử dụng Amazon RDS PostgreSQL phiên bản 18.3, loại phiên bản db.t4g.micro kiến trúc ARM Graviton2 tiết kiệm điện năng và tối ưu chi phí. Cơ sở dữ liệu được đặt trong DB Subnet Group thuộc 2 Isolated Subnets, kích hoạt tự động backup và mã hóa lưu trữ bằng AWS KMS.
+[161][Normal] Về quản lý khóa bí mật, toàn bộ chuỗi kết nối DATABASE_URL, GEMINI_API_KEY và JWT_SECRET_KEY được lưu trữ tập trung trên AWS Secrets Manager (bí mật: enterprise-rag-secrets). Máy chủ ứng dụng EC2 được gán IAM Role EC2-S3-RAG sử dụng AWS Security Token Service (STS) để lấy quyền đọc cấu hình động khi khởi động, triệt tiêu hoàn toàn rủi ro lộ lọt thông tin do nhúng (hard-code) khóa bí mật trong mã nguồn.
+[162][Normal] 
+[163][Normal] Hình 3.4: Thông số cấu hình cụm cơ sở dữ liệu quan hệ Amazon RDS PostgreSQL (db.t4g.micro)
+[164][Normal] 3.2.4. Đóng gói Container & Kho lưu trữ Amazon ECR
+[165][Normal] Mã nguồn ứng dụng được đóng gói thành các Docker images độc lập áp dụng kỹ thuật Multi-stage build để giảm thiểu tối đa kích thước. Các images sau đó được gắn thẻ phiên bản và đẩy lên kho lưu trữ riêng tư Amazon Elastic Container Registry (ECR):
+[166][List Bullet] ECR Repository 1: enterprise-rag-backend: Chứa môi trường runtime Python 3.10, FastAPI, LangChain, PaddleOCR và Qdrant client.
+[167][List Bullet] ECR Repository 2: enterprise-rag-frontend: Chứa bản dựng production tối ưu hóa của ứng dụng React/Next.js.
+[168][Normal] 
+[169][Normal] Hình 3.5: Danh sách các Private Container Repositories trên Amazon Elastic Container Registry (ECR)
+[170][Normal] 3.2.5. Cân bằng tải và Định tuyến Tầng 7 với Application Load Balancer (ALB)
+[171][Normal] Nhằm phân phối lưu lượng truy cập tối ưu và đảm bảo khả năng chịu lỗi cao, hệ thống triển khai Application Load Balancer (rag-lb) nằm trên 2 Public Subnets. ALB thực hiện định tuyến lưu lượng thông minh dựa trên đường dẫn (Path-based Routing):
+[172][Normal] Bảng 3.2: Bảng quy tắc định tuyến Path-based Routing trên Application Load Balancer
+[173][Normal] 
+[174][Normal] Hình 3.6: Trạng thái hoạt động Active của Application Load Balancer (rag-lb) trên AWS
+[175][Normal] 
+[176][Normal] Hình 3.7: Kết quả Health Check tự động xác nhận toàn bộ Targets trong Target Group đều ở trạng thái Healthy
+[177][Normal] 3.3. Xây dựng Hệ thống Trợ lý Tri thức NexusDoc AI (Agentic RAG Engine)
+[178][Normal] 3.3.1. Ngăn xếp Công nghệ Thực tế (Tech Stack) & Clean Architecture
+[179][Normal] Dự án ứng dụng được xây dựng theo mô hình Clean Architecture, phân tách rõ ràng giữa tầng Controller (API), Service (Business Logic) và Repository (Data Access):
+[180][List Bullet] Frontend: Frontend: React 18 / Next.js — Giao diện hiện đại, trực quan, hỗ trợ tương tác đa tài liệu theo phong cách Google NotebookLM.
+[181][List Bullet] Backend API: Backend API: FastAPI (Python 3.10+) — Xử lý API bất đồng bộ tốc độ cao, quản lý xác thực OAuth2 / JWT (Access Token 30 phút, Refresh Token 7 ngày).
+[182][List Bullet] Database: Cơ sở dữ liệu quan hệ: PostgreSQL — Quản lý thông tin người dùng, danh mục tài liệu, lịch sử chat và metadata văn bản.
+[183][List Bullet] Vector DB: Cơ sở dữ liệu Vector: Qdrant — Lưu trữ và truy vấn vector tương đồng ngữ nghĩa 1024 chiều từ mô hình BAAI/bge-m3, hỗ trợ bộ lọc cứng (Hard-Filters) theo user_id và document_ids.
+[184][List Bullet] Background Task: Hàng đợi & Xử lý nền: Celery Worker + Redis — Đảm nhiệm các tác vụ nặng (bóc tách OCR, phân tích cấu trúc, tạo vector nhúng) chạy ngầm, giữ cho API phản hồi tức thì.
+[185][Normal] 3.3.2. Quản trị Định danh & Cô lập Dữ liệu Tuyệt đối (Multi-Tenancy)
+[186][Normal] Trong môi trường doanh nghiệp, dữ liệu văn bản nội bộ giữa các phòng ban là tối mật. Hệ thống cài đặt cơ chế Multi-Tenancy cấp độ dữ liệu: Mọi vector trong Qdrant đều được gắn thẻ cứng user_id. Truy vấn của người dùng hoặc phòng ban này hoàn toàn không thể rà quét sang dữ liệu của phòng ban khác nhờ bộ lọc payload cứng của Qdrant.
+[187][Normal] 3.3.3. Bóc tách Văn bản Phân cấp (Hierarchical Legal & Regulation Parsing)
+[188][Normal] Các văn bản quản trị nội bộ quan trọng luôn được soạn thảo theo cấu trúc phân tầng (Chương -> Điều -> Khoản). Các hệ thống RAG thông thường (Naive RAG) cắt vụn văn bản ngẫu nhiên theo số từ làm đứt gãy hoàn toàn ngữ cảnh cha của điều khoản.
+[189][Normal] Hệ thống NexusDoc AI tích hợp bộ Hierarchical Legal Parser tự động nhận diện cấu trúc Chương, Điều, Khoản qua biểu thức chính quy (Regex). Mỗi đoạn trích xuất đều được gắn metadata ngữ cảnh cha ([Tên tài liệu] > [Chương X] > [Điều Y]), loại bỏ tình trạng mất ngữ cảnh. Đối với các tài liệu ảnh chụp hoặc bản scan mờ, hệ thống tự động kích hoạt PaddleOCR (PP-OCRv4) nhận diện chính xác tiếng Việt có dấu.
+[190][Normal] 3.3.4. Vùng Tri Thức Giới Hạn (NotebookLM-Style Knowledge Scope)
+[191][Normal] Mỗi cuộc trò chuyện độc lập có thể được đính kèm với một danh sách các tài liệu cụ thể do người dùng lựa chọn (ví dụ: chỉ tra trong 'Quy chế Tài chính 2026' hoặc 'Hợp đồng Vendor A'). AI bị giới hạn nghiêm ngặt trong phạm vi tri thức đó, ngăn chặn việc lấy nhầm dữ liệu sang các tài liệu không liên quan.
+[192][Normal] 3.3.5. Pipeline AI RAG Chuyên sâu 3 Giai đoạn & Cross-Reference Agent
+[193][Normal] Quy trình xử lý trí tuệ nhân tạo của hệ thống vận hành qua 3 giai đoạn chặt chẽ:
+[194][List Bullet] 1. Ingestion: Giai đoạn 1 (Ingestion Pipeline): Trích xuất văn bản số qua PyMuPDF; ảnh scan kích hoạt PaddleOCR; bóc tách phân cấp theo Chương-Điều-Khoản; mã hóa vector 1024 chiều qua BAAI/bge-m3 nạp vào Qdrant.
+[195][List Bullet] 2. Retrieval: Giai đoạn 2 (Retrieval Pipeline): Self-Query Retriever dùng Pydantic bóc tách câu hỏi thành Hard-Filters; Hybrid Search kết hợp Dense Vector + BM25 quét Top 25; Cross-Encoder Re-ranking (BAAI/bge-reranker-v2-m3) lọc Top 3; Cross-Reference Agent tự động phát hiện tham chiếu chéo ('Theo quy định tại Điều 12...') để kích hoạt truy vấn phụ đắp thêm dữ liệu vào ngữ cảnh.
+[196][List Bullet] 3. Generation: Giai đoạn 3 (Generation Pipeline): Format Context tiêm cấu trúc cây phân cấp; Prompt Engineering chống ảo giác (Zero-Hallucination); bắt buộc trích dẫn số trang/điều khoản; gọi mô hình LLM (Gemini 2.5 Flash / Amazon Bedrock) sinh phản hồi trực tiếp hoặc streaming qua SSE.
+[197][Normal] 3.3.6. Bảng Ánh xạ Module Hệ thống RAG sang Dịch vụ Đám mây AWS
+[198][Normal] Bảng dưới đây tổng hợp chi tiết mối liên hệ và sự ánh xạ hoàn hảo giữa từng thành phần trong mã nguồn dự án RAG với hệ sinh thái dịch vụ đám mây AWS:
+[199][Normal] Bảng 3.3: Bảng ánh xạ toàn diện module mã nguồn RAG sang dịch vụ đám mây AWS
+[200][Normal] 3.4. Kiểm thử Toàn trình, Đánh giá Hiệu năng & Rào chắn Bảo mật
+[201][Normal] Để kiểm chứng năng lực thực tế, hệ thống đã trải qua các kịch bản kiểm thử toàn trình nghiêm ngặt:
+[202][Normal] 3.4.1. Kiểm thử Toàn trình End-to-End Pipeline RAG trên Web UI qua ALB
+[203][Normal] Truy cập ứng dụng qua tên miền công khai của Application Load Balancer: http://rag-lb-1113719893.ap-southeast-1.elb.amazonaws.com. Nạp tài liệu nghiệp vụ TTTN-01.docx (Báo cáo thực tập tốt nghiệp) vào kho tri thức.
+[204][Normal] Kịch bản 1: Kịch bản 1: Tra cứu thông tin kèm trích dẫn số trang chính xác
+[205][Normal] Đặt câu hỏi: 'địa chỉ thực tập là ở đâu'. Hệ thống phân tích ngữ cảnh và trả về câu trả lời chuẩn xác tuyệt đối: Tầng 36 Tòa nhà Bitexco Financial Tower, Số 2 đường Hải Triều, Phường Sài Gòn, TP. Hồ Chí Minh kèm badge trích dẫn [Nguồn: TTTN-01.docx - Trang 1].
+[206][Normal] 
+[207][Normal] Hình 3.8: Giao diện NexusDoc AI Assistant trích xuất địa chỉ thực tập kèm nguồn TTTN-01.docx - Trang 1
+[208][Normal] Kịch bản 2: Kịch bản 2: Trích xuất thực thể và tóm tắt sản phẩm dự kiến
+[209][Normal] Tiếp tục đặt câu hỏi: 'sản phẩm dự kiến là'. Trợ lý AI phản hồi ngắn gọn, chính xác: 'Dự án Capstone Project xây dựng ứng dụng thực tế trên AWS Free Tier' kèm đối chiếu nguồn gốc rõ ràng.
+[210][Normal] 
+[211][Normal] Hình 3.9: Giao diện AI trích xuất sản phẩm dự kiến của đề tài từ tài liệu thực tế
+[212][Normal] 3.4.2. Kiểm thử Kiến trúc Bảo mật 2 Tầng (2-Tier Security Guardrails)
+[213][Normal] Đối với các hệ thống AI ứng dụng trong doanh nghiệp, nguy cơ rò rỉ dữ liệu hoặc mô hình tự bịa đặt thông tin (Hallucination) khi gặp câu hỏi ngoài phạm vi ngữ cảnh là rủi ro nghiêm trọng. Hệ thống đã triển khai cơ chế bảo vệ 2 lớp:
+[214][List Bullet] Tầng 1 (Pre-flight): Tầng 1 (Fast Guardrail - Regex & Keyword Pre-Flight Check): Quét nhanh qua biểu thức chính quy và danh mục từ khóa cấm, phát hiện tức thì các kỹ thuật tấn công Prompt Injection (như 'Ignore previous instructions...') và Jailbreak.
+[215][List Bullet] Tầng 2 (Context Grounding): Tầng 2 (Deep Guardrail - System Prompt Hardening & Context Grounding): Thiết lập chỉ thị hệ thống nghiêm ngặt (System Prompt Hardening). Nếu ngữ cảnh tìm kiếm không chứa thông tin trả lời, ép buộc mô hình từ chối lịch sự, triệt tiêu hoàn toàn ảo giác (Zero-Hallucination).
+[216][Normal] Thử nghiệm đặt câu hỏi gài bẫy nằm hoàn toàn ngoài phạm vi tài liệu doanh nghiệp: 'giá cổ phiếu Amazon hôm nay là bao nhiêu' hoặc 'Dự báo xu hướng giá cổ phiếu của tập đoàn Amazon và tình hình kinh doanh trong quý tới sẽ ra sao?'. Cơ chế Security Guardrails 2 tầng ngay lập tức kích hoạt, từ chối trả lời một cách lịch sự: 'Tài liệu được cung cấp không đề cập đến thông tin này...'. Điều này chứng minh hệ thống tuân thủ nguyên tắc Grounding tuyệt đối, triệt tiêu 100% hiện tượng tự ý bịa đặt thông tin.
+[217][Normal] 
+[218][Normal] Hình 3.10: Kiểm thử Enterprise Security Guardrails kích hoạt từ chối câu hỏi ngoài phạm vi tài liệu
+[219][Normal] 3.4.3. Kết quả Đo lường Đánh giá Tự động (Benchmark Results)
+[220][Normal] Hệ thống được đánh giá qua tập 10 câu hỏi kiểm thử chuẩn (benchmark_results.json):
+[221][Normal] Bảng 3.4: Kết quả kiểm thử tự động toàn trình (Benchmark Results) của NexusDoc AI
+[222][Normal] 3.5. Giám sát Vận hành & Cảnh báo Sự cố với Amazon CloudWatch
+[223][Normal] Hệ sinh thái CloudWatch cung cấp khả năng quan sát toàn diện (Observability) cho hệ thống NexusDoc AI 24/7:
+[224][List Bullet] CloudWatch Dashboard: Thiết lập CloudWatch Dashboard mang tên Dashboard-RAG hiển thị đồng thời các biểu đồ: RequestCount, TargetResponseTime (độ trễ phản hồi API), HTTP 4xx/5xx Error Rates và tải CPU.
+[225][List Bullet] CloudWatch Alarms & SNS: Tạo CloudWatch Alarm EC2-High-CPU-Alarm kích hoạt khi CPU vượt 80% trong 5 phút; tự động bắn cảnh báo qua Amazon SNS Topic RAG-Alerts-Topic tới kỹ sư vận hành.
+[226][Normal] 
+[227][Normal] Hình 3.11: Bảng điều khiển giám sát Dashboard-RAG thời gian thực trên Amazon CloudWatch
+[228][Normal] 
+[229][Normal] Hình 3.12: Cấu hình CloudWatch Alarm kích hoạt cảnh báo qua SNS Topic khi tải CPU vượt ngưỡng
+[230][Normal] 3.6. Hoạt động Mở rộng: Chuỗi Cuộc thi Đấu trường Điều tra Sự cố Cloud (Prove It)
+[231][Normal] Trong kỳ thực tập, sinh viên đã đại diện đội thi Team 06 WAR tham gia chuỗi thử thách đấu trường đám mây Prove It: Agentic Cloud Investigation Series do CloudThinker, FCAJ và AWS Vietnam phối hợp tổ chức:
+[232][Normal] Day 1 (Govern) - Quản trị Ranh giới Tài nguyên và Thẩm định Tự động
+[233][Normal] Áp dụng 5 nguyên tắc quản trị Agent: Nhận diện ranh giới tài khoản, nguyên tắc Read-only, tách biệt khẳng định xác thực [verified] với giả định [assumed]. Đội thi đã xuất sắc hoàn thành bản báo cáo kiểm kê tài nguyên tự động, đạt điểm số 70.8 điểm (nằm trong nhóm dẫn đầu cuộc thi).
+[234][Normal] Day 2 (Investigate) - Điều tra Sự cố Cụm Kubernetes Read-Only (Hotel Search Degradation)
+[235][Normal] Trong ngày thi thứ hai, sinh viên tiếp thu 8 nguyên tắc giảm nhiễu tín hiệu (Noise Reduction Pipeline cô đọng 13,000 sự kiện thô thành 40 clusters thực tế) và kỹ năng điều tra phân nhánh bằng câu truy vấn phân định (Distinguishing Query).
+[236][Normal] Thực chiến 30 phút điều tra sự cố thực tế: 'Hotel Search Degradation After Traffic Recovery' trên cụm Kubernetes Production (hotel-prod-apse1) hoàn toàn ở chế độ Read-Only:
+[237][List Bullet] Thiệt hại thực tế: Triệu chứng khách hàng và hiện tượng 'Dashboard xanh giả tạo' (False-Green): Sau khi lưu lượng phục hồi, khách hàng chịu thiệt hại mất 100% khả năng tìm kiếm khách sạn (Customer Search Success Rate = 0.000) với độ trễ p95 tăng vọt lên 6.05 giây. Đáng chú ý, bảng điều khiển Kubernetes vẫn báo cáo 4/4 nodes Ready, CPU 0%, RAM 6%, 1/1 ready endpoints và hoàn thành 91.9% lưu lượng cấu hình, chứng minh hạ tầng 'xanh' không đồng nghĩa với việc khách hàng nhận được kết quả hữu ích.
+[238][List Bullet] Cơ chế Retry Storm: Xác minh Nguyên nhân gốc (Verified Root Cause): Xung đột trong hợp đồng dung lượng (Capacity Contract) giữa dịch vụ gọi (search) và dịch vụ đích (rate). Search được cấu hình RATE_RPC_MAX_ATTEMPTS=3, dẫn đến hệ số khuếch đại retry đạt 2.87 lần/request. Khi lưu lượng tìm kiếm đạt 7.60 RPS, tổng tải dồn xuống rate-service đạt 21.81 attempts/giây, vượt 9.1% giới hạn trần cấu hình (RATE_BACKEND_QPS_LIMIT=20). Hàng đợi RATE_QUEUE_CAPACITY=256 bị nghẽn 88.5% (đạt đỉnh 100%), biến các lỗi từ chối ban đầu thành thời gian chờ kéo dài, cạn kiệt deadline (phát sinh 10,850 lỗi DeadlineExceeded, 1,476 lỗi Canceled, 1,055 lỗi ResourceExhausted).
+[239][List Bullet] Loại trừ đối nghịch: Loại trừ giả thuyết cạnh tranh: Bác bỏ giả thuyết quá tải Node (CPU 0%, RAM 6%), bác bỏ thiếu backend endpoints (đầy đủ 1/1), bác bỏ lỗi crash loop pods, bác bỏ lỗi mất kết nối mạng. Khẳng định duy nhất giả thuyết bão hòa hàng đợi do khuếch đại retry.
+[240][Normal] Bảng 3.5: Bảng tổng hợp chỉ số đo lường và chuỗi nhân quả sự cố Hotel Search Degradation (Day 2 Prove It)
+[241][Normal] Kế hoạch hành động ứng phó ưu tiên được nhóm đề xuất: (1) Biện pháp tình thế P0: Giảm retry amplification ngay lập tức qua canary RATE_RPC_MAX_ATTEMPTS=1; (2) Bản vá gốc P0: Đánh giá thông lượng thực tế, nâng RATE_BACKEND_QPS_LIMIT và tăng replica; (3) Rào chắn P1: Triển khai Load Shedding từ chối bớt tải trước khi hàng đợi chạm 256; (4) Cải tiến giám sát P1: Chuyển cảnh báo trực ca sang chỉ số Customer Outcome Success và Queue Depth thay vì dựa vào completed RPS hay pod readiness.
+[242][Normal] Day 3 (Prove It Arena) - Đấu Trường Thực Chiến Chung Kết Cloud & AI
+[243][Normal] Ngày thi đấu thứ ba (Day 03 · Prove It Arena) là vòng chung kết khép lại chuỗi sự kiện chuyên sâu Prove It: Agentic Cloud Investigation Series do CloudThinker phối hợp cùng cộng đồng First Cloud Journey (FCAJ) và AWS Vietnam tổ chức. Khác với Day 01 (học lý thuyết quản trị và rà quét tài nguyên) và Day 02 (phương pháp lọc nhiễu cảnh báo và điều tra sự cố đơn lẻ), Day 03 là một đấu trường thực chiến trọn vẹn (Arena): không có bài giảng lý thuyết, không có Keynote, mà bước thẳng vào Briefing, 2 vòng thi tính điểm căng thẳng với Giám khảo AI (AI Judge), và phiên công bố kết quả chung cuộc (Reveal & Close). Toàn bộ cuộc thi diễn ra trong đúng 150 phút với đồng hồ đếm ngược trên bảng điện tử trung tâm tại arena.cloudthinker.io.
+[244][Normal] Quy tắc Phòng thi & 5 Nguyên tắc Bất biến (Rules of the Room):
+[245][List Bullet] Chỉ đọc (Read-only): AI Agent chỉ được phép thanh tra (inspect) hạ tầng; Agent tuyệt đối không thể chỉnh sửa cấu hình, không can thiệp tài nguyên và không đọc dữ liệu mật (secrets).
+[246][List Bullet] Không nhập Credentials: Kỹ sư tham gia đấu trường bằng mã định danh đội thi (Team Code); môi trường thử thách được cấp phát và cấu hình hoàn toàn tự động.
+[247][List Bullet] Đội đề xuất, con người quyết định: Mọi giải pháp trong báo cáo chỉ là phương án đề xuất (proposal) và bắt buộc phải gắn liền với một cá nhân chịu trách nhiệm (Named Owner). Không có bất kỳ thao tác nào được tự động thực thi lên môi trường thi.
+[248][List Bullet] Cơ cấu đội thi đồng hành: Mỗi đội thi gồm 1 đến 4 thành viên cùng theo dõi một máy tính xách tay trung tâm, phối hợp xây dựng một báo cáo Markdown (.md) duy nhất và theo dõi bảng xếp hạng.
+[249][List Bullet] Bảo mật & Ẩn danh (Redaction): Toàn bộ AWS Account ID, endpoint dịch vụ, IP nội bộ và các dữ liệu định danh môi trường thật bắt buộc phải được che giấu (redacted) nghiêm ngặt trước khi nộp bài.
+[250][Normal] Cơ chế Chấm điểm & Nền kinh tế Lượt nộp (The Attempt Economy):
+[251][Normal] Hội đồng Giám khảo chấm điểm của Đấu trường là một Giám khảo AI (AI Agent Judge) hoạt động khách quan, tự động và tuân thủ các quy chuẩn nghiêm ngặt: (1) Đọc báo cáo 3 lượt độc lập (three runs) và lấy điểm trung vị (Median Score) làm kết quả chính thức; (2) Giới hạn tối đa 3 lượt chấm có điểm (Three Graded Attempts) cho mỗi vòng thi, mỗi lần bấm 'Mark final & grade' sẽ tiêu tốn 1 lượt; (3) Thời gian làm nguội 3 phút (Cooldown) giữa 2 lần nộp liên tiếp nhằm triệt tiêu hành vi đoán mò; (4) Bắt buộc đánh dấu Final trước khi hết giờ, nếu không vòng thi sẽ nhận 0 điểm; (5) Phân định hòa điểm (Tie-break) bằng thời gian nộp sớm trên đồng hồ.
+[252][Normal] Bảng 3.6: Khung cấu trúc 7 Blocks và Tiến trình Đấu trường Chung kết Day 3 Prove It Arena
+[253][Normal] Chi tiết Thực chiến Vòng 1 & Vòng 2 tại Đấu trường:
+[254][List Bullet] Vòng 1 (Find the Gaps — 25 phút, 30 điểm): Đội thi đối mặt với môi trường Cloud mới lạ chưa từng biết trước. Trong 25 phút, nhóm rà quét các lỗ hổng theo 5 lăng kính AWS Well-Architected Framework: Chi phí (Cost), Bảo mật (Security), Hiệu năng (Performance), Độ tin cậy (Reliability) và Vận hành xuất sắc (Operations). Báo cáo Vòng 1 tuân thủ đúng 3 khối nội dung: Khối 01 (Phạm vi khảo sát tài nguyên & ranh giới bị chặn [blocked]), Khối 02 (Các phát hiện cần khắc phục kèm raw evidence), Khối 03 (Yêu cầu phê duyệt từ con người).
+[255][List Bullet] Vòng 2 (Find the Cause — 45 phút, 70 điểm): Đội thi điều tra sự cố gián đoạn dịch vụ nghiêm trọng ảnh hưởng trực tiếp tới người dùng thực tế trên bảng điểm bị khóa kín (Hidden Board). Nhóm xây dựng Chuỗi nhân quả (Causal Chain) xuyên suốt từ triệu chứng (Symptom) đến đúng tài nguyên có cấu hình bị thay đổi (Root Cause Resource) qua 5 khối chuẩn: (1) Câu hỏi sự cố & Phạm vi; (2) Giả thuyết & Loại trừ giả thuyết sai; (3) Bằng chứng thực nghiệm bảo toàn raw log; (4) Cơ chế kích hoạt và lan truyền lỗi; (5) Nguyên nhân gốc & Kế hoạch hành động ứng phó ưu tiên.
+[256][List Bullet] Tiêu chuẩn Bằng chứng (Evidence Standard): Bộ nhãn kiểm chứng chất lượng chứng cứ được áp dụng chặt chẽ trong báo cáo: [verified] (có raw output/API log chứng minh trực tiếp), [inferred] (suy luận logic từ sự thật đã xác minh), [assumed] (nhận định chưa đủ chứng cứ), và [blocked] (ranh giới quyền hạn bị chặn không thể đọc). Giám khảo AI đánh giá cao tính trung thực khoa học: một phát hiện có bằng chứng vững chắc có giá trị cao hơn nhiều nhận định phỏng đoán mò.
+[257][Normal] 
+[258][Normal] PHẦN 4: PHÂN TÍCH, ĐÁNH GIÁ VÀ ĐỀ XUẤT
+[259][Normal] 4.1. Nhận xét về Quy trình Công việc và Giải pháp Kỹ thuật
+[260][Normal] Quy trình làm việc tại AWS Việt Nam mang tính khoa học, chuẩn mực và chuyên nghiệp cao. Mọi thiết kế kiến trúc đều bắt đầu từ tài liệu thiết kế (RFC / Design Doc) trước khi viết mã. Giải pháp kỹ thuật kết hợp giữa hạ tầng đám mây AWS Zero-Trust và mô hình Agentic RAG đã chứng minh được tính ưu việt:
+[261][List Bullet] Mô hình Security Group Chaining và VPC Subnet Isolation đảm bảo dữ liệu quan trọng không bao giờ bị lộ lọt ra môi trường công cộng.
+[262][List Bullet] Kiến trúc RAG đa tầng kết hợp Re-ranking và PaddleOCR giải quyết triệt để bài toán xử lý tài liệu phức tạp, mang lại câu trả lời có tính căn cứ pháp lý cao.
+[263][Normal] 4.2. Các Khó khăn Thách thức Thực tế và Giải pháp Khắc phục
+[264][Normal] Trong quá trình triển khai, sinh viên đã đối mặt và giải quyết thành công nhiều thách thức kỹ thuật lớn:
+[265][List Bullet] Thách thức 1 (Mất ngữ cảnh cha): Hiện tượng cắt nhỏ tài liệu theo số lượng từ truyền thống làm mất tiêu đề Chương/Điều cha. Giải pháp: Xây dựng bộ Hierarchical Legal Parser bóc tách cấu trúc cây và tự động nối breadcrumb vào từng chunk.
+[266][List Bullet] Thách thức 2 (Tài liệu ảnh scan): Nhiều tài liệu là file scan hoặc văn bản dạng ảnh không có text layer. Giải pháp: Tích hợp PaddleOCR (PP-OCRv4) chạy bất đồng bộ qua Celery Worker để không làm treo luồng chính.
+[267][List Bullet] Thách thức 3 (Kết nối CSDL cách ly): Cơ sở dữ liệu RDS PostgreSQL nằm trong Isolated Subnet không cho phép truy cập trực tiếp từ máy trạm bên ngoài để debug. Giải pháp: Sử dụng cơ chế AWS SSM Session Manager hoặc SSH Tunneling qua máy chủ EC2 trung chuyển.
+[268][Normal] 4.3. Phân tích Mối liên hệ Giữa Lý thuyết Giảng đường và Thực tế Doanh nghiệp
+[269][Normal] Kỳ thực tập tại AWS Việt Nam đã giúp sinh viên hiện thực hóa và kiểm chứng sâu sắc các khối kiến thức lý thuyết đã được trang bị tại Trường Đại học Xây dựng Hà Nội (HUCE):
+[270][List Bullet] Mạng máy tính -> AWS VPC: Môn Mạng máy tính: Lý thuyết về mô hình OSI, dải địa chỉ IP, chia mạng con CIDR và bảng định tuyến Routing Table được ứng dụng trực tiếp khi thiết kế kiến trúc mạng ảo AWS VPC và phân chia Subnetting trên 2 Availability Zones.
+[271][List Bullet] Cơ sở dữ liệu -> Amazon RDS: Môn Cơ sở dữ liệu: Các khái niệm về chuẩn hóa dữ liệu, ràng buộc toàn vẹn, giao dịch ACID và lập chỉ mục (Indexing) được áp dụng khi triển khai Amazon RDS PostgreSQL và tối ưu hóa truy vấn.
+[272][List Bullet] Trí tuệ nhân tạo -> Vector Search & RAG: Môn Trí tuệ nhân tạo: Các lý thuyết về không gian vector đa chiều, độ tương đồng Cosine Similarity, mô hình Transformer và kỹ nghệ tạo lời nhắc (Prompt Engineering) chuyển hóa thành giải pháp RAG tra cứu tri thức thực tế.
+[273][List Bullet] Công nghệ phần mềm -> DevOps & CI/CD: Môn Công nghệ phần mềm: Quy trình phát triển phần mềm Agile/Scrum, quản lý phiên bản với Git/GitHub, và đóng gói phần mềm bằng Docker được vận hành bài bản theo tiêu chuẩn sản xuất chuyên nghiệp.
+[274][Normal] 4.4. Đề xuất Cải tiến Quy trình và Giải pháp Kỹ thuật Mở rộng
+[275][Normal] Từ kinh nghiệm thực tiễn, sinh viên đề xuất hai giải pháp nâng cấp trong tương lai:
+[276][List Bullet] Đề xuất 1 (IaC Automation): Chuyển đổi toàn bộ quá trình khởi tạo tài nguyên thủ công qua AWS Console sang mô hình mã hóa hạ tầng (Infrastructure as Code - IaC) bằng AWS CDK (Cloud Development Kit) hoặc Terraform, giúp tự động hóa 100% quy trình triển khai và kiểm soát phiên bản hạ tầng qua Git.
+[277][List Bullet] Đề xuất 2 (Distributed Vector Cluster): Nâng cấp cụm Qdrant Vector Store trên EC2 đơn lẻ sang mô hình Qdrant Distributed Cluster kết hợp Amazon EKS để tăng cường khả năng chịu tải khi kho văn bản đạt quy mô hàng triệu trang.
+[278][Normal] 
+[279][Normal] PHẦN 5: TỰ NHẬN XÉT VÀ ĐỊNH HƯỚNG NGHỀ NGHIỆP CÁ NHÂN
+[280][Normal] 5.1. Tự đánh giá Năng lực Cá nhân theo Chuẩn Đào tạo
+[281][Normal] Căn cứ theo thang chuẩn đánh giá năng lực của Khoa Công nghệ Thông tin – Trường Đại học Xây dựng Hà Nội, sinh viên tự đánh giá mức độ hoàn thành nhiệm vụ theo 12 tiêu chí chuyên môn:
+[282][Normal] Bảng 5.1: Bảng tự đánh giá năng lực cá nhân theo các tiêu chuẩn chuyên môn
+[283][Normal] 5.2. Điểm mạnh và Điểm còn Hạn chế Cần Hoàn thiện
+[284][Normal] Về điểm mạnh: Sinh viên có tư duy logic tốt, khả năng tự nghiên cứu công nghệ mới nhanh chóng, đam mê đặc biệt với hạ tầng đám mây và kỹ thuật AI Agent; có thái độ làm việc nghiêm túc, cẩn trọng trong từng dòng lệnh và cấu hình an ninh.
+[285][Normal] Về điểm hạn chế: Kinh nghiệm vận hành các hệ thống phân tán quy mô lớn (Large-Scale Distributed Systems) chịu tải hàng chục ngàn người dùng đồng thời còn ở mức độ sơ khởi; cần rèn luyện thêm kỹ năng giao tiếp tiếng Anh chuyên ngành trong môi trường doanh nghiệp đa quốc gia.
+[286][Normal] 5.3. Bài học Kinh nghiệm Thực tiễn Rút ra từ Môi trường AWS
+[287][Normal] Trải qua 8 tuần thực tập thực chiến tại AWS Việt Nam, sinh viên đã đúc kết được những bài học kinh nghiệm sâu sắc cả về chuyên môn kỹ thuật lẫn văn hóa làm việc:
+[288][List Bullet] Ưu tiên An ninh tuyệt đối: Tư duy thiết kế hạ tầng an ninh từ gốc (Security by Design / Zero-Trust): Trong môi trường điện toán đám mây, an ninh mạng và cô lập quyền hạn (Least Privilege) luôn là ưu tiên số một, không bao giờ được xem nhẹ trong bất kỳ cấu hình mạng hay dịch vụ nào.
+[289][List Bullet] Chủ động học hỏi không ngừng: Tinh thần tự chủ và văn hóa 'Learn and Be Curious': Công nghệ Cloud và Trí tuệ nhân tạo thay đổi từng ngày; khả năng chủ động đọc tài liệu kỹ thuật chuẩn (AWS Documentation & Whitepapers) và thực hành trực tiếp (hands-on) là chìa khóa để giải quyết mọi thử thách công nghệ mới.
+[290][List Bullet] Tư duy Tối ưu hóa Toàn diện: Tối ưu hóa chi phí và hiệu năng (Cost & Performance Optimization): Một kiến trúc tốt không chỉ vận hành ổn định mà phải đạt hiệu năng cao với chi phí tiết kiệm nhất cho doanh nghiệp; kỹ năng lựa chọn kích cỡ tài nguyên phù hợp (Right-sizing) là phẩm chất cốt lõi của một kỹ sư Cloud.
+[291][Normal] 5.4. Lộ trình Phát triển Nghề nghiệp trong Lĩnh vực Cloud / DevOps / AI
+[292][Normal] Dựa trên nền tảng kiến thức và kỹ năng thực tế tích lũy từ kỳ thực tập, sinh viên xây dựng lộ trình phát triển nghề nghiệp 3 năm (2026 – 2029) rõ ràng:
+[293][List Bullet] Giai đoạn 1: Năm 1 (2026 - 2027): Hoàn thành tốt nghiệp chương trình đào tạo ngành Khoa học máy tính tại HUCE; thi đỗ chứng chỉ quốc tế AWS Certified Solutions Architect - Associate (SAA-C03); bắt đầu làm việc ở vị trí Junior Cloud / DevOps Engineer.
+[294][List Bullet] Giai đoạn 2: Năm 2 (2027 - 2028): Tham gia triển khai các dự án di chuyển hạ tầng đám mây (Cloud Migration) quy mô lớn; làm chủ công nghệ Container Orchestration với Amazon EKS / Kubernetes và CI/CD Pipelines; thi đỗ chứng chỉ AWS Certified DevOps Engineer - Professional (DOP-C02).
+[295][List Bullet] Giai đoạn 3: Năm 3 (2028 - 2029): Phát triển lên vai trò Mid-level Cloud Solutions Architect / AI Platform Engineer, trực tiếp thiết kế và dẫn dắt các giải pháp tích hợp Generative AI và Agentic Workflow vào quy trình nghiệp vụ cốt lõi của doanh nghiệp.
+[296][Normal] 
+[297][Normal] PHẦN 6: KẾT LUẬN VÀ KIẾN NGHỊ
+[298][Normal] 6.1. Kết luận và Tổng kết Các Bài học Kinh nghiệm Quý báu
+[299][Normal] Kỳ thực tập tốt nghiệp tại CÔNG TY TNHH AMAZON WEB SERVICES VIỆT NAM là một cột mốc đặc biệt quan trọng trong hành trình học tập của sinh viên. Sinh viên không chỉ hoàn thành 100% mục tiêu học tập theo chuẩn đầu ra (CLOs) mà còn trực tiếp xây dựng thành công giải pháp phần mềm NexusDoc AI vận hành mượt mà trên môi trường đám mây AWS chuẩn Enterprise.
+[300][Normal] Bài học kinh nghiệm: Những bài học kinh nghiệm cốt lõi đúc kết được sau 8 tuần thực tập bao gồm:
+[301][List Bullet] Bảo mật là ưu tiên số 1: Tư duy thiết kế hệ thống bảo mật từ gốc (Security by Design / Zero-Trust) là nguyên tắc sống còn, không được xem nhẹ trong bất kỳ khâu nào từ mạng đến lưu trữ.
+[302][List Bullet] Tinh thần Fail Fast, Learn Faster: Hạ tầng đám mây cho phép thử nghiệm nhanh, thất bại nhanh với chi phí thấp; người kỹ sư cần chủ động tạo prototype để chứng minh giá trị trước khi triển khai rộng rãi.
+[303][List Bullet] Làm chủ dữ liệu và rào chắn an toàn: Trong kỷ nguyên AI tạo sinh, mô hình ngôn ngữ lớn chỉ là công cụ tính toán; giá trị cốt lõi nằm ở chất lượng dữ liệu nạp vào (Data Pipeline) và các rào chắn an toàn (Security Guardrails).
+[304][Normal] 6.2. Kiến nghị Đối với Nhà trường (Trường ĐH Xây dựng Hà Nội - HUCE)
+[305][Normal] Để giúp các thế hệ sinh viên tiếp theo tiếp cận nhanh hơn với yêu cầu của ngành công nghiệp số, sinh viên xin phép kiến nghị với Nhà trường và Khoa Công nghệ Thông tin một số điểm sau:
+[306][List Bullet] Xem xét đưa học phần Điện toán đám mây (Cloud Computing) và Công nghệ Container (Docker/Kubernetes) thành các môn học chính quy bắt buộc trong chương trình đào tạo ngành Khoa học máy tính.
+[307][List Bullet] Tăng cường hợp tác chặt chẽ với các chương trình đào tạo của doanh nghiệp như AWS Academy để cấp tài khoản thực hành đám mây chính thức cho sinh viên trong các môn học thực hành.
+[308][Normal] 6.3. Kiến nghị Đối với Đơn vị Hướng dẫn (AWS Việt Nam)
+[309][Normal] Sinh viên xin trân trọng gửi tới Ban Lãnh đạo và Ban Điều phối chương trình First Cloud AI Journey của AWS Việt Nam một số đề xuất:
+[310][List Bullet] Tiếp tục duy trì và mở rộng quy mô chương trình First Cloud AI Journey cho các khóa sinh viên kỹ thuật tiếp theo, tạo nguồn nhân tài Cloud chất lượng cao cho đất nước.
+[311][List Bullet] Tổ chức thêm các buổi sinh hoạt chuyên môn nhóm nhỏ (Study Group Check-in) định kỳ hàng tuần giữa các thực tập sinh để giao lưu, chia sẻ kinh nghiệm xử lý lỗi cấu hình (troubleshooting) thực tế.
+[312][Normal] 
+[313][Normal] TÀI LIỆU THAM KHẢO
+[314][Normal] [1] Amazon Web Services, 'AWS Well-Architected Framework: Reliability, Security and Cost Optimization Pillars', AWS Whitepapers, 2026.
+[315][Normal] [2] Amazon Web Services, 'Amazon Virtual Private Cloud (VPC) User Guide: Multi-AZ Architecture and Subnet Isolation', 2026.
+[316][Normal] [3] Amazon Web Services, 'Application Load Balancers User Guide: Path-Based Routing and Target Groups', 2026.
+[317][Normal] [4] Qdrant Team, 'Qdrant Vector Database Documentation: Hybrid Search and Payload Filtering', https://qdrant.tech/documentation/, 2026.
+[318][Normal] [5] BAAI Research, 'BGE-M3: Multi-Lingual, Multi-Functionality, Multi-Granularity Text Embeddings Through Versatile Pre-Training', arXiv preprint, 2024.
+[319][Normal] [6] Google AI Studio, 'Google Gemini 2.5 Flash API Documentation and Context Caching Architecture', 2026.
+[320][Normal] [7] PaddlePaddle Authors, 'PaddleOCR: Ultra Lightweight OCR System and PP-OCRv4 Multi-Language Recognition', 2024.
+[321][Normal] [8] LangChain Team, 'LangChain Python Documentation: Retrieval-Augmented Generation (RAG) and Self-Query Retriever', 2026.
+[322][Normal] [9] CloudThinker & FCAJ, 'Prove It: Agentic Cloud Investigation Series Curriculum and Technical Reports', https://docs.cloudthinker.io/, 2026.
+[323][Normal] [10] Trường Đại học Xây dựng Hà Nội, 'Đề cương chi tiết và Quy chuẩn Đánh giá học phần Thực tập Tốt nghiệp', Khoa Công nghệ Thông tin, 2026.
+[324][Normal] 
+[325][Normal] XÁC NHẬN HOÀN THÀNH THỰC TẬP TỐT NGHIỆP
+
+[326][Normal] 

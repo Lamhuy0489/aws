@@ -31,3 +31,13 @@
 - Cap nhat de xuat Proposal va Worklog Tuan 10 song ngu tren website Hugo workshop, bien dich thanh cong 215 trang va day len GitHub.
 - Tao bai tong hop chuyen sau wiki/syntheses/project-status-and-roadmap.md va cap nhat wiki/index.md.
 - Soan thao huong dan chi tiet thiet lap tung buoc tren AWS Management Console (S3, DynamoDB, SSM Parameter Store).
+
+## [2026-11-18]
+- Chay chu ky Compile va Output dot 4:
+  - Hoan tat bao ve de tai tot nghiep va danh gia thuc tap TTTN-08b (CLO1 - CLO7, HPself = 9.38/10).
+  - Thuc hien chu trinh FinOps Teardown: Kiem toan chi phi AWS Credit (tieu thu 85.48 USD luy ke, bao toan 100% so du con lai).
+  - Sao luu toan bo 91 tep du lieu tu S3 ve data/s3_backup/.
+  - Giai phong hoan toan cac tai nguyen dam may tinh phi: ALB, Target Group, EC2, EBS, Elastic IPs, S3 buckets, DynamoDB, Lambda, API Gateway, Cognito User Pool, SSM Parameter Store.
+  - Bien soan bai tong hop wiki/syntheses/internship-completion-and-resource-teardown.md.
+  - Bien soan nhat ky kiem toan chi tiet wiki/outputs/2026-11-18-aws-resource-teardown-and-finops-audit.md.
+  - Cap nhat ban do tri thuc wiki/index.md va dong bo toan bo tri thuc len Git.
